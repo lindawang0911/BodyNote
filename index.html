@@ -1,0 +1,1937 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BodyNote">
+<meta name="theme-color" content="#FAF7F2">
+<title>BodyNote · 身體筆記</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF7F2;
+  --bg-soft: #F5F0E8;
+  --card: #FFFFFF;
+  --sage: #A8B89A;
+  --sage-deep: #7A8B6F;
+  --sage-soft: #D9E2D2;
+  --sage-bg: #EEF2EA;
+  --rose: #E8C5C5;
+  --rose-soft: #F5E4E4;
+  --amber: #D4A574;
+  --amber-soft: #F0E0CC;
+  --ink: #3D3A35;
+  --ink-soft: #6B665E;
+  --ink-mute: #9A9389;
+  --line: #EDE8DF;
+  --line-soft: #F3EFE7;
+  --radius: 20px;
+  --radius-sm: 14px;
+  --shadow: 0 2px 12px rgba(120, 110, 90, 0.06);
+  --shadow-lg: 0 8px 32px rgba(120, 110, 90, 0.10);
+  --serif: 'Fraunces', 'Noto Serif TC', serif;
+  --sans: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 400;
+  line-height: 1.6;
+  font-size: 15px;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App container — 模擬手機畫面 */
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 88px;
+  position: relative;
+  background: var(--bg);
+}
+
+/* Header */
+.header {
+  padding: 24px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+  font-style: italic;
+}
+.header h1 span { color: var(--sage-deep); }
+.header .date {
+  font-size: 13px;
+  color: var(--ink-mute);
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+/* Pages */
+.page { padding: 0 20px; display: none; animation: fadeUp 0.4s ease; }
+.page.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Greeting */
+.greeting {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  color: var(--ink);
+}
+.greeting-sub {
+  font-size: 13px;
+  color: var(--ink-mute);
+  margin-bottom: 20px;
+}
+
+/* Three big metric cards */
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.metric {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.metric-label {
+  font-size: 11px;
+  color: var(--ink-mute);
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.metric-value {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.metric-unit {
+  font-size: 12px;
+  color: var(--ink-mute);
+  font-family: var(--sans);
+  margin-left: 2px;
+}
+.metric-diff {
+  font-size: 11px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.metric-diff.up { color: var(--amber); }
+.metric-diff.down { color: var(--sage-deep); }
+.metric-diff.flat { color: var(--ink-mute); }
+
+/* Recovery card — 最重要 */
+.recovery {
+  background: linear-gradient(135deg, #EEF2EA 0%, #F5F0E8 100%);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.recovery::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 184, 154, 0.25), transparent 70%);
+}
+.recovery-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  position: relative;
+}
+.recovery-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--sage-deep);
+}
+.recovery-score {
+  font-family: var(--serif);
+  font-size: 52px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -2px;
+}
+.recovery-score-unit {
+  font-size: 14px;
+  color: var(--ink-mute);
+  margin-left: 4px;
+  font-family: var(--sans);
+}
+.recovery-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 3px;
+  margin: 14px 0 12px;
+  overflow: hidden;
+  position: relative;
+}
+.recovery-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage), var(--sage-deep));
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+.recovery-advice {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  position: relative;
+}
+.recovery-advice strong { color: var(--sage-deep); font-weight: 500; }
+
+/* Body diagram */
+.body-section {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.section-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 14px;
+  background: var(--sage);
+  border-radius: 2px;
+}
+.body-diagram {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  padding: 10px 0;
+}
+.body-diagram svg { max-width: 100%; height: auto; }
+.body-dot {
+  fill: var(--sage);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.body-dot:hover { fill: var(--sage-deep); r: 7; }
+.body-label {
+  font-size: 10px;
+  fill: var(--ink-soft);
+  font-family: var(--sans);
+}
+.body-line { stroke: var(--sage-soft); stroke-width: 1; stroke-dasharray: 2 2; }
+
+/* Alert card */
+.alert {
+  background: var(--amber-soft);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-left: 3px solid var(--amber);
+}
+.alert-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+.alert-text {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.6;
+}
+.alert-text strong {
+  color: var(--amber);
+  font-weight: 500;
+}
+
+/* Today's workout */
+.workout-today {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.workout-today-name {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.workout-today-meta {
+  font-size: 12px;
+  color: var(--ink-mute);
+  margin-bottom: 14px;
+}
+.workout-today-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: var(--sage-deep);
+  color: white;
+}
+.btn-primary:active { transform: scale(0.98); background: var(--sage); }
+.btn-soft {
+  background: var(--sage-bg);
+  color: var(--sage-deep);
+}
+.btn-ghost {
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+}
+
+/* Tab bar */
+.tabbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index: 100;
+}
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-mute);
+  font-size: 10px;
+  font-family: var(--sans);
+  transition: color 0.2s;
+}
+.tab.active { color: var(--sage-deep); }
+.tab-icon { font-size: 20px; line-height: 1; }
+.tab-label { font-weight: 500; letter-spacing: 0.3px; }
+
+/* Forms */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  transition: border 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--sage);
+}
+.form-textarea { resize: none; min-height: 70px; }
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* Slider */
+.slider-group {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.slider-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.slider-label {
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.slider-value {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--sage-deep);
+}
+input[type="range"] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  background: var(--sage-deep);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(122, 139, 111, 0.3);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px;
+  background: var(--sage-deep);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Chip select */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--sans);
+}
+.chip.active {
+  background: var(--sage-bg);
+  border-color: var(--sage);
+  color: var(--sage-deep);
+  font-weight: 500;
+}
+
+/* Big submit button */
+.submit-bar {
+  position: sticky;
+  bottom: 80px;
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+  padding: 16px 0 8px;
+  margin: 20px -20px 0;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--sage-deep);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(122, 139, 111, 0.25);
+  transition: all 0.2s;
+}
+.submit-btn:active { transform: scale(0.98); }
+
+/* Weekly schedule */
+.day-card {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.day-card.today {
+  border: 2px solid var(--sage);
+  background: var(--sage-bg);
+}
+.day-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.day-name {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.day-name.today-badge::after {
+  content: 'today';
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--sage-deep);
+  margin-left: 8px;
+  font-weight: 400;
+}
+.day-status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--ink-mute);
+}
+.day-status.done { background: var(--sage-bg); color: var(--sage-deep); }
+.day-status.rest { background: var(--rose-soft); color: #B07878; }
+.day-workout {
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.day-duration { color: var(--ink-mute); font-size: 12px; }
+
+/* Trends */
+.trend-card {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.trend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.trend-name {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink);
+}
+.trend-value {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.trend-value-diff {
+  font-size: 11px;
+  margin-left: 4px;
+}
+.chart-svg {
+  width: 100%;
+  height: 80px;
+  display: block;
+}
+
+/* Filter pills */
+.filter-pills {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.filter-pill {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.filter-pill.active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+/* Modal */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(60, 55, 50, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-bg.active { display: flex; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--bg);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px max(24px, env(safe-area-inset-bottom));
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--line);
+  border-radius: 2px;
+  margin: -8px auto 16px;
+}
+.modal-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.modal-sub {
+  font-size: 13px;
+  color: var(--ink-mute);
+  margin-bottom: 20px;
+}
+
+/* History list */
+.history-item {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow);
+}
+.history-date {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--ink);
+}
+.history-meta {
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-top: 2px;
+}
+.history-weight {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--sage-deep);
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ink-mute);
+}
+.empty-emoji { font-size: 36px; margin-bottom: 12px; }
+.empty-text { font-family: var(--serif); font-style: italic; font-size: 15px; line-height: 1.6; }
+
+/* Achievement */
+.ach-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.ach {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 16px 14px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.ach.unlocked { background: linear-gradient(135deg, var(--sage-bg), var(--bg-soft)); }
+.ach.locked { opacity: 0.45; }
+.ach-icon { font-size: 28px; margin-bottom: 6px; }
+.ach-title { font-family: var(--serif); font-size: 13px; color: var(--ink); margin-bottom: 2px; }
+.ach-desc { font-size: 11px; color: var(--ink-mute); line-height: 1.4; }
+
+/* Decorative quote */
+.quote {
+  background: var(--rose-soft);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+}
+.quote-mark {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 40px;
+  color: var(--rose);
+  line-height: 0.5;
+  position: absolute;
+  top: 16px; left: 16px;
+}
+.quote-text {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: #8B6868;
+  line-height: 1.7;
+}
+
+/* Onboard splash */
+.onboard {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+.onboard.hidden { display: none; }
+.onboard h1 {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 42px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+.onboard h1 span { color: var(--sage-deep); }
+.onboard p {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin-bottom: 32px;
+  max-width: 280px;
+  line-height: 1.7;
+}
+.onboard-form {
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 100px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 12px 20px;
+  border-radius: 24px;
+  font-size: 13px;
+  z-index: 400;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Onboarding -->
+<div class="onboard" id="onboard">
+  <h1>Body<span>Note</span></h1>
+  <p>溫柔地記錄身體的每一天<br>不催促、不評價</p>
+  <div class="onboard-form">
+    <div class="form-group">
+      <label class="form-label">你的名字（怎麼稱呼你）</label>
+      <input type="text" class="form-input" id="onboard-name" placeholder="例如：小雨">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">身高（公分）</label>
+        <input type="number" class="form-input" id="onboard-height" placeholder="160" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">目前體重</label>
+        <input type="number" class="form-input" id="onboard-weight" placeholder="55" step="0.1">
+      </div>
+    </div>
+    <button class="submit-btn" onclick="finishOnboard()">開始記錄</button>
+  </div>
+</div>
+
+<div class="app">
+
+<!-- Header -->
+<div class="header">
+  <h1>Body<span>Note</span></h1>
+  <div class="date" id="today-date"></div>
+</div>
+
+<!-- ====== HOME ====== -->
+<div class="page active" id="page-home">
+  <div class="greeting" id="greeting-text">早安</div>
+  <div class="greeting-sub" id="greeting-sub">今天的身體，慢慢聽它說話</div>
+
+  <!-- Three metrics -->
+  <div class="metric-row">
+    <div class="metric">
+      <div class="metric-label">WEIGHT</div>
+      <div class="metric-value" id="m-weight">—<span class="metric-unit">kg</span></div>
+      <div class="metric-diff" id="m-weight-diff"></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">BODY FAT</div>
+      <div class="metric-value" id="m-fat">—<span class="metric-unit">%</span></div>
+      <div class="metric-diff" id="m-fat-diff"></div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">BMI</div>
+      <div class="metric-value" id="m-bmi">—</div>
+      <div class="metric-diff" id="m-bmi-diff"></div>
+    </div>
+  </div>
+
+  <!-- Recovery -->
+  <div class="recovery">
+    <div class="recovery-head">
+      <div class="recovery-title">today's recovery</div>
+    </div>
+    <div>
+      <span class="recovery-score" id="recovery-score">—</span>
+      <span class="recovery-score-unit">/ 100</span>
+    </div>
+    <div class="recovery-bar">
+      <div class="recovery-bar-fill" id="recovery-bar" style="width: 0%"></div>
+    </div>
+    <div class="recovery-advice" id="recovery-advice">填寫今日狀態後會出現恢復建議</div>
+  </div>
+
+  <!-- Alerts -->
+  <div id="alerts-container"></div>
+
+  <!-- Body diagram -->
+  <div class="body-section">
+    <div class="section-title">身體地圖</div>
+    <div class="body-diagram">
+      <svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- Body silhouette -->
+        <g fill="none" stroke="#D9D4C8" stroke-width="1.5">
+          <!-- head -->
+          <circle cx="140" cy="36" r="22"/>
+          <!-- neck -->
+          <path d="M130 58 L130 70 Q140 74 150 70 L150 58"/>
+          <!-- shoulders & torso -->
+          <path d="M100 80 Q120 72 140 72 Q160 72 180 80 L188 130 Q188 160 184 200 L170 240 Q156 244 140 244 Q124 244 110 240 L96 200 Q92 160 92 130 Z"/>
+          <!-- left arm -->
+          <path d="M100 82 Q86 100 80 130 Q76 160 74 188 Q72 210 76 224"/>
+          <!-- right arm -->
+          <path d="M180 82 Q194 100 200 130 Q204 160 206 188 Q208 210 204 224"/>
+          <!-- left leg -->
+          <path d="M114 244 Q108 280 106 310 Q104 340 108 370"/>
+          <path d="M134 244 Q132 280 130 310 Q128 340 124 370"/>
+          <!-- right leg -->
+          <path d="M146 244 Q148 280 150 310 Q152 340 156 370"/>
+          <path d="M166 244 Q172 280 174 310 Q176 340 172 370"/>
+        </g>
+
+        <!-- Connection lines -->
+        <line class="body-line" x1="100" y1="80" x2="40" y2="80"/>
+        <line class="body-line" x1="180" y1="130" x2="240" y2="130"/>
+        <line class="body-line" x1="92" y1="160" x2="30" y2="160"/>
+        <line class="body-line" x1="188" y1="190" x2="250" y2="190"/>
+        <line class="body-line" x1="80" y1="130" x2="30" y2="130"/>
+        <line class="body-line" x1="110" y1="290" x2="30" y2="290"/>
+        <line class="body-line" x1="170" y1="290" x2="250" y2="290"/>
+        <line class="body-line" x1="110" y1="350" x2="30" y2="350"/>
+        <line class="body-line" x1="170" y1="350" x2="250" y2="350"/>
+
+        <!-- Dots & labels -->
+        <circle class="body-dot" cx="100" cy="80" r="5" onclick="openField('shoulder')"/>
+        <text class="body-label" x="38" y="78" text-anchor="end">肩寬</text>
+
+        <circle class="body-dot" cx="80" cy="130" r="5" onclick="openField('upper_arm')"/>
+        <text class="body-label" x="28" y="128" text-anchor="end">上臂</text>
+
+        <circle class="body-dot" cx="180" cy="130" r="5" onclick="openField('chest')"/>
+        <text class="body-label" x="242" y="128">胸圍</text>
+
+        <circle class="body-dot" cx="92" cy="160" r="5" onclick="openField('waist')"/>
+        <text class="body-label" x="28" y="158" text-anchor="end">腰圍</text>
+
+        <circle class="body-dot" cx="188" cy="190" r="5" onclick="openField('hip')"/>
+        <text class="body-label" x="252" y="188">臀圍</text>
+
+        <circle class="body-dot" cx="110" cy="290" r="5" onclick="openField('left_thigh')"/>
+        <text class="body-label" x="28" y="288" text-anchor="end">左大腿</text>
+
+        <circle class="body-dot" cx="170" cy="290" r="5" onclick="openField('right_thigh')"/>
+        <text class="body-label" x="252" y="288">右大腿</text>
+
+        <circle class="body-dot" cx="110" cy="350" r="5" onclick="openField('left_calf')"/>
+        <text class="body-label" x="28" y="348" text-anchor="end">左小腿</text>
+
+        <circle class="body-dot" cx="170" cy="350" r="5" onclick="openField('right_calf')"/>
+        <text class="body-label" x="252" y="348">右小腿</text>
+      </svg>
+    </div>
+    <div style="text-align: center; font-size: 11px; color: var(--ink-mute); margin-top: 8px;">
+      點擊身體上的點，紀錄該部位數據
+    </div>
+  </div>
+
+  <!-- Today's workout preview -->
+  <div class="workout-today" id="workout-today-card">
+    <div class="workout-today-name" id="wt-name">今日尚未安排運動</div>
+    <div class="workout-today-meta" id="wt-meta">到「運動」頁面安排一週計畫</div>
+    <div class="workout-today-actions">
+      <button class="btn btn-soft" onclick="switchTab('workout')">查看運動</button>
+    </div>
+  </div>
+
+  <div class="quote">
+    <div class="quote-mark">"</div>
+    <div class="quote-text">身體不是任務，是一起生活的夥伴。<br>慢一點沒關係。</div>
+  </div>
+</div>
+
+<!-- ====== RECORD ====== -->
+<div class="page" id="page-record">
+  <div class="greeting">紀錄</div>
+  <div class="greeting-sub">今天身體想說些什麼</div>
+
+  <div class="section-title" style="margin: 16px 0 12px;">基本數據</div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">體重 (kg)</label>
+      <input type="number" class="form-input" id="r-weight" step="0.1" placeholder="55.0">
+    </div>
+    <div class="form-group">
+      <label class="form-label">體脂肪 (%)</label>
+      <input type="number" class="form-input" id="r-fat" step="0.1" placeholder="25.0">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">BMI（自動計算）</label>
+      <input type="text" class="form-input" id="r-bmi" readonly style="background: var(--bg-soft);">
+    </div>
+    <div class="form-group">
+      <label class="form-label">內臟脂肪</label>
+      <input type="number" class="form-input" id="r-visceral" step="0.1" placeholder="選填">
+    </div>
+  </div>
+
+  <div class="section-title" style="margin: 20px 0 12px;">圍度（選填）</div>
+  <div class="form-row-3">
+    <div class="form-group">
+      <label class="form-label">腰圍</label>
+      <input type="number" class="form-input" id="r-waist" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">臀圍</label>
+      <input type="number" class="form-input" id="r-hip" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">胸圍</label>
+      <input type="number" class="form-input" id="r-chest" step="0.1">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">左大腿</label>
+      <input type="number" class="form-input" id="r-left_thigh" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">右大腿</label>
+      <input type="number" class="form-input" id="r-right_thigh" step="0.1">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">左小腿</label>
+      <input type="number" class="form-input" id="r-left_calf" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">右小腿</label>
+      <input type="number" class="form-input" id="r-right_calf" step="0.1">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">肩寬</label>
+      <input type="number" class="form-input" id="r-shoulder" step="0.1">
+    </div>
+    <div class="form-group">
+      <label class="form-label">上臂圍</label>
+      <input type="number" class="form-input" id="r-upper_arm" step="0.1">
+    </div>
+  </div>
+
+  <div class="section-title" style="margin: 20px 0 12px;">今日狀態</div>
+  <div class="slider-group">
+    <div class="slider-head">
+      <span class="slider-label">睡眠時間</span>
+      <span class="slider-value"><span id="r-sleep-val">7</span> 小時</span>
+    </div>
+    <input type="range" id="r-sleep" min="0" max="12" step="0.5" value="7" oninput="document.getElementById('r-sleep-val').textContent=this.value">
+  </div>
+  <div class="slider-group">
+    <div class="slider-head">
+      <span class="slider-label">疲勞程度</span>
+      <span class="slider-value"><span id="r-fatigue-val">5</span> / 10</span>
+    </div>
+    <input type="range" id="r-fatigue" min="1" max="10" value="5" oninput="document.getElementById('r-fatigue-val').textContent=this.value">
+  </div>
+  <div class="slider-group">
+    <div class="slider-head">
+      <span class="slider-label">壓力程度</span>
+      <span class="slider-value"><span id="r-stress-val">5</span> / 10</span>
+    </div>
+    <input type="range" id="r-stress" min="1" max="10" value="5" oninput="document.getElementById('r-stress-val').textContent=this.value">
+  </div>
+
+  <div class="form-group" style="margin-top: 12px;">
+    <label class="form-label">生理期狀態</label>
+    <div class="chips" id="chips-menstrual">
+      <div class="chip active" data-val="none">無</div>
+      <div class="chip" data-val="pre">前期</div>
+      <div class="chip" data-val="during">期間</div>
+      <div class="chip" data-val="post">後期</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">精神狀態</label>
+    <div class="chips" id="chips-mood">
+      <div class="chip" data-val="great">很好</div>
+      <div class="chip active" data-val="okay">還行</div>
+      <div class="chip" data-val="tired">疲倦</div>
+      <div class="chip" data-val="anxious">焦慮</div>
+      <div class="chip" data-val="sad">低落</div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">今日備註</label>
+    <textarea class="form-textarea" id="r-note" placeholder="今天身體有什麼感覺？"></textarea>
+  </div>
+
+  <div class="submit-bar">
+    <button class="submit-btn" onclick="saveRecord()">儲存今日紀錄</button>
+  </div>
+
+  <div class="section-title" style="margin: 28px 0 12px;">最近紀錄</div>
+  <div id="history-list"></div>
+</div>
+
+<!-- ====== WORKOUT ====== -->
+<div class="page" id="page-workout">
+  <div class="greeting">運動</div>
+  <div class="greeting-sub">配合身體節奏的安排，不勉強</div>
+
+  <div id="workout-week"></div>
+
+  <div class="section-title" style="margin: 24px 0 12px;">為你推薦</div>
+  <div id="workout-suggestions"></div>
+</div>
+
+<!-- ====== TRENDS ====== -->
+<div class="page" id="page-trends">
+  <div class="greeting">趨勢</div>
+  <div class="greeting-sub">身體的長期樣貌</div>
+
+  <div class="filter-pills">
+    <div class="filter-pill active" data-range="7">7 天</div>
+    <div class="filter-pill" data-range="30">30 天</div>
+    <div class="filter-pill" data-range="90">90 天</div>
+    <div class="filter-pill" data-range="all">全部</div>
+  </div>
+
+  <div id="trends-list"></div>
+</div>
+
+<!-- ====== ME ====== -->
+<div class="page" id="page-me">
+  <div class="greeting" id="me-name">我</div>
+  <div class="greeting-sub" id="me-sub">你的健康紀錄空間</div>
+
+  <div class="section-title" style="margin: 16px 0 12px;">成就</div>
+  <div class="ach-grid" id="ach-grid"></div>
+
+  <div class="section-title" style="margin: 20px 0 12px;">資料</div>
+  <div class="day-card" onclick="exportData()">
+    <div class="day-card-head">
+      <div class="day-name">匯出紀錄 (CSV)</div>
+      <div class="day-status">↓</div>
+    </div>
+    <div class="day-workout">下載所有資料備份</div>
+  </div>
+  <div class="day-card" onclick="clearAllData()">
+    <div class="day-card-head">
+      <div class="day-name" style="color: #B07878;">清除所有資料</div>
+      <div class="day-status">⟲</div>
+    </div>
+    <div class="day-workout">重新開始（無法復原）</div>
+  </div>
+
+  <div style="text-align: center; padding: 30px 0 20px; color: var(--ink-mute); font-family: var(--serif); font-style: italic; font-size: 12px;">
+    BodyNote · v0.1<br>made with care
+  </div>
+</div>
+
+</div>
+
+<!-- Tab bar -->
+<div class="tabbar">
+  <button class="tab active" data-tab="home" onclick="switchTab('home')">
+    <div class="tab-icon">☼</div>
+    <div class="tab-label">首頁</div>
+  </button>
+  <button class="tab" data-tab="record" onclick="switchTab('record')">
+    <div class="tab-icon">✎</div>
+    <div class="tab-label">紀錄</div>
+  </button>
+  <button class="tab" data-tab="workout" onclick="switchTab('workout')">
+    <div class="tab-icon">❀</div>
+    <div class="tab-label">運動</div>
+  </button>
+  <button class="tab" data-tab="trends" onclick="switchTab('trends')">
+    <div class="tab-icon">∿</div>
+    <div class="tab-label">趨勢</div>
+  </button>
+  <button class="tab" data-tab="me" onclick="switchTab('me')">
+    <div class="tab-icon">◐</div>
+    <div class="tab-label">我</div>
+  </button>
+</div>
+
+<!-- Workout modal -->
+<div class="modal-bg" id="workout-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="wm-title">星期一 · 運動安排</div>
+    <div class="modal-sub">設定當天的運動計畫</div>
+
+    <div class="form-group">
+      <label class="form-label">運動名稱</label>
+      <input type="text" class="form-input" id="wm-name" placeholder="例如：低強度伸展">
+    </div>
+    <div class="form-group">
+      <label class="form-label">運動類型</label>
+      <div class="chips" id="chips-type">
+        <div class="chip active" data-val="stretch">伸展</div>
+        <div class="chip" data-val="yoga">瑜伽</div>
+        <div class="chip" data-val="walk">散步</div>
+        <div class="chip" data-val="cardio">有氧</div>
+        <div class="chip" data-val="strength">重訓</div>
+        <div class="chip" data-val="hiit">HIIT</div>
+        <div class="chip" data-val="rest">休息</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">預計時間（分）</label>
+        <input type="number" class="form-input" id="wm-duration" placeholder="20">
+      </div>
+      <div class="form-group">
+        <label class="form-label">影片連結（選填）</label>
+        <input type="text" class="form-input" id="wm-url" placeholder="YouTube URL">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">備註</label>
+      <textarea class="form-textarea" id="wm-note" placeholder="今天的目標、注意事項"></textarea>
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-ghost" onclick="closeModal('workout-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveWorkoutSchedule()">儲存安排</button>
+    </div>
+
+    <div id="wm-complete-section" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line);">
+      <div class="modal-title" style="font-size: 16px;">完成紀錄</div>
+      <div class="form-row" style="margin-top: 12px;">
+        <div class="form-group">
+          <label class="form-label">實際運動（分）</label>
+          <input type="number" class="form-input" id="wm-actual">
+        </div>
+        <div class="form-group">
+          <label class="form-label">強度</label>
+          <select class="form-select" id="wm-intensity">
+            <option value="low">低</option>
+            <option value="medium">中</option>
+            <option value="high">高</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">當天感受</label>
+        <textarea class="form-textarea" id="wm-feeling" placeholder="運動時的感覺..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">隔天反應</label>
+        <div class="chips" id="chips-reaction">
+          <div class="chip" data-val="well_recovered">恢復很好</div>
+          <div class="chip" data-val="comfortable">很舒服</div>
+          <div class="chip" data-val="sore">微痠</div>
+          <div class="chip" data-val="exhausted">太累</div>
+          <div class="chip" data-val="poor_sleep">睡不好</div>
+          <div class="chip" data-val="getting_sick">快感冒感</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width: 100%; margin-top: 8px;" onclick="saveWorkoutLog()">儲存完成紀錄</button>
+    </div>
+  </div>
+</div>
+
+<!-- Field modal (from body diagram) -->
+<div class="modal-bg" id="field-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="fm-title">紀錄</div>
+    <div class="modal-sub">輸入最新數值，會直接進入今日紀錄</div>
+    <div class="form-group">
+      <label class="form-label" id="fm-label">數值</label>
+      <input type="number" class="form-input" id="fm-input" step="0.1" autofocus>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-ghost" onclick="closeModal('field-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveField()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== STATE ==========
+const STORAGE_KEY = 'bodynote_data_v1';
+let state = {
+  user: null,
+  records: [],
+  schedules: {},
+  logs: [],
+  currentWorkoutDay: null,
+  currentField: null
+};
+
+// ========== INIT ==========
+function init() {
+  loadState();
+  updateDate();
+  if (!state.user) {
+    document.getElementById('onboard').classList.remove('hidden');
+  } else {
+    renderAll();
+  }
+  setupChips();
+  setupFilters();
+  setupBMI();
+}
+
+function loadState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try { state = { ...state, ...JSON.parse(raw) }; } catch(e) {}
+  }
+}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+function updateDate() {
+  const d = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('today-date').textContent = `${months[d.getMonth()]} ${d.getDate()}`;
+}
+
+function finishOnboard() {
+  const name = document.getElementById('onboard-name').value.trim() || '你';
+  const height = parseFloat(document.getElementById('onboard-height').value);
+  const weight = parseFloat(document.getElementById('onboard-weight').value);
+  if (!height || !weight) { toast('請填寫身高與體重'); return; }
+  state.user = { name, height, createdAt: new Date().toISOString() };
+  // 第一筆紀錄
+  const today = todayKey();
+  state.records.push({
+    date: today,
+    weight, height,
+    bmi: +(weight / Math.pow(height/100, 2)).toFixed(1),
+    sleep: 7, fatigue: 5, stress: 5,
+    menstrual: 'none', mood: 'okay',
+    createdAt: new Date().toISOString()
+  });
+  saveState();
+  document.getElementById('onboard').classList.add('hidden');
+  renderAll();
+  toast(`歡迎，${name}`);
+}
+
+// ========== TAB SWITCH ==========
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  window.scrollTo(0, 0);
+  if (tab === 'workout') renderWorkout();
+  if (tab === 'trends') renderTrends();
+  if (tab === 'me') renderMe();
+}
+
+// ========== CHIPS ==========
+function setupChips() {
+  document.querySelectorAll('.chips').forEach(group => {
+    group.addEventListener('click', e => {
+      if (e.target.classList.contains('chip')) {
+        const isMulti = group.dataset.multi === 'true';
+        if (!isMulti) {
+          group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        }
+        e.target.classList.toggle('active');
+      }
+    });
+  });
+}
+function getChipValue(id) {
+  const el = document.querySelector(`#${id} .chip.active`);
+  return el ? el.dataset.val : null;
+}
+function setChipValue(id, val) {
+  document.querySelectorAll(`#${id} .chip`).forEach(c => {
+    c.classList.toggle('active', c.dataset.val === val);
+  });
+}
+
+// ========== BMI auto-calc ==========
+function setupBMI() {
+  const w = document.getElementById('r-weight');
+  if (!w) return;
+  w.addEventListener('input', () => {
+    const weight = parseFloat(w.value);
+    if (weight && state.user) {
+      const bmi = (weight / Math.pow(state.user.height/100, 2)).toFixed(1);
+      document.getElementById('r-bmi').value = bmi;
+    }
+  });
+}
+
+// ========== DATE HELPERS ==========
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtDate(key) {
+  const [y,m,d] = key.split('-');
+  return `${m}/${d}`;
+}
+
+// ========== RECORD ==========
+function saveRecord() {
+  if (!state.user) return;
+  const fields = ['weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh','left_calf','right_calf','shoulder','upper_arm'];
+  const record = {
+    date: todayKey(),
+    height: state.user.height,
+    sleep: parseFloat(document.getElementById('r-sleep').value),
+    fatigue: parseInt(document.getElementById('r-fatigue').value),
+    stress: parseInt(document.getElementById('r-stress').value),
+    menstrual: getChipValue('chips-menstrual'),
+    mood: getChipValue('chips-mood'),
+    note: document.getElementById('r-note').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  fields.forEach(f => {
+    const el = document.getElementById('r-' + f);
+    if (el) {
+      const v = parseFloat(el.value);
+      if (!isNaN(v)) record[f] = v;
+    }
+  });
+  if (record.weight && state.user.height) {
+    record.bmi = +(record.weight / Math.pow(state.user.height/100, 2)).toFixed(1);
+  }
+  // upsert by date
+  const idx = state.records.findIndex(r => r.date === record.date);
+  if (idx >= 0) state.records[idx] = { ...state.records[idx], ...record };
+  else state.records.push(record);
+  saveState();
+  toast('紀錄已儲存 ✓');
+  renderAll();
+  switchTab('home');
+}
+
+// ========== RENDER HOME ==========
+function renderAll() {
+  renderHome();
+  renderHistory();
+}
+
+function renderHome() {
+  if (!state.user) return;
+  // greeting by time
+  const h = new Date().getHours();
+  let g = '早安';
+  if (h >= 11 && h < 14) g = '午安';
+  else if (h >= 14 && h < 18) g = '下午好';
+  else if (h >= 18) g = '晚安';
+  document.getElementById('greeting-text').textContent = `${g}，${state.user.name}`;
+
+  // sort records by date
+  const sorted = [...state.records].sort((a,b) => a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length - 1];
+  const prev = sorted[sorted.length - 2];
+
+  if (latest) {
+    setMetric('m-weight', latest.weight, prev?.weight, 'kg');
+    setMetric('m-fat', latest.fat, prev?.fat, '%');
+    setMetric('m-bmi', latest.bmi, prev?.bmi, '');
+  }
+
+  // Recovery
+  const score = calcRecovery(latest);
+  document.getElementById('recovery-score').textContent = score;
+  document.getElementById('recovery-bar').style.width = score + '%';
+  document.getElementById('recovery-advice').innerHTML = recoveryAdvice(score, latest);
+
+  // Alerts
+  renderAlerts(latest);
+
+  // Today's workout
+  renderTodayWorkout();
+}
+
+function setMetric(id, val, prev, unit) {
+  const elV = document.getElementById(id);
+  const elD = document.getElementById(id + '-diff');
+  if (val === undefined || val === null || isNaN(val)) {
+    elV.innerHTML = `—<span class="metric-unit">${unit}</span>`;
+    elD.textContent = '';
+    return;
+  }
+  elV.innerHTML = `${val}<span class="metric-unit">${unit}</span>`;
+  if (prev !== undefined && prev !== null && !isNaN(prev)) {
+    const diff = +(val - prev).toFixed(1);
+    if (diff > 0) {
+      elD.className = 'metric-diff up';
+      elD.textContent = `↑ ${diff}`;
+    } else if (diff < 0) {
+      elD.className = 'metric-diff down';
+      elD.textContent = `↓ ${Math.abs(diff)}`;
+    } else {
+      elD.className = 'metric-diff flat';
+      elD.textContent = '—';
+    }
+  } else { elD.textContent = ''; }
+}
+
+// ========== RECOVERY SCORE ==========
+function calcRecovery(r) {
+  if (!r) return '—';
+  let score = 100;
+  // sleep
+  if (r.sleep < 6) score -= 20;
+  else if (r.sleep < 7) score -= 10;
+  else if (r.sleep >= 7.5) score += 5;
+  // fatigue
+  if (r.fatigue >= 8) score -= 15;
+  else if (r.fatigue >= 6) score -= 8;
+  // stress
+  if (r.stress >= 8) score -= 15;
+  else if (r.stress >= 6) score -= 8;
+  // menstrual
+  if (r.menstrual === 'pre') score -= 10;
+  else if (r.menstrual === 'during') score -= 15;
+  // 最近運動反應
+  const recentLog = [...state.logs].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if (recentLog) {
+    if (recentLog.reaction === 'exhausted' || recentLog.reaction === 'getting_sick') score -= 25;
+    else if (recentLog.reaction === 'poor_sleep') score -= 15;
+    else if (recentLog.reaction === 'well_recovered') score += 10;
+    if (recentLog.intensity === 'high' && isYesterday(recentLog.date)) score -= 10;
+  }
+  return Math.max(0, Math.min(100, score));
+}
+
+function isYesterday(dateStr) {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return dateStr === `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function recoveryAdvice(score, r) {
+  if (score === '—') return '填寫今日紀錄後，會出現專屬建議';
+  if (score >= 80) return `<strong>狀態很好</strong>，今天可以挑戰高強度（HIIT、INSANITY 等）。但別忘了暖身，量力而為。`;
+  if (score >= 60) return `<strong>中等恢復</strong>，適合中強度訓練（重訓、有氧 30-45 分鐘）。聽身體的聲音。`;
+  if (score >= 40) return `<strong>身體需要溫柔</strong>，建議低強度（瑜伽、伸展、散步 15-30 分鐘）。今天不適合 HIIT。`;
+  return `<strong>該休息了</strong>。今天請給身體完整修復——熱水澡、伸展或冥想就好，不要勉強運動。`;
+}
+
+// ========== ALERTS ==========
+function renderAlerts(r) {
+  const container = document.getElementById('alerts-container');
+  container.innerHTML = '';
+  if (!r) return;
+  const alerts = [];
+  if (r.sleep < 6) alerts.push('昨晚睡眠少於 6 小時，今天可以的話，午餐後找 10 分鐘閉眼休息。');
+  if (r.fatigue >= 8) alerts.push('疲勞指數偏高，今天的運動可以改成伸展或散步，把恢復放第一。');
+  if (r.stress >= 8) alerts.push('壓力指數偏高，記得在工作空檔深呼吸三次，或喝杯溫水。');
+  if (r.menstrual === 'pre' || r.menstrual === 'during') alerts.push('生理期附近，身體比較敏感，請降低運動強度，多補充鐵質。');
+
+  // 連續高強度檢查
+  const recent = [...state.logs].filter(l => l.intensity === 'high').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,2);
+  if (recent.length === 2) alerts.push('連續高強度訓練了，今天讓身體休息一天，效果反而更好。');
+
+  alerts.forEach(text => {
+    const div = document.createElement('div');
+    div.className = 'alert';
+    div.innerHTML = `<div class="alert-icon">✿</div><div class="alert-text">${text}</div>`;
+    container.appendChild(div);
+  });
+}
+
+// ========== BODY DIAGRAM FIELDS ==========
+const FIELD_LABELS = {
+  shoulder: '肩寬 (cm)',
+  upper_arm: '上臂圍 (cm)',
+  chest: '胸圍 (cm)',
+  waist: '腰圍 (cm)',
+  hip: '臀圍 (cm)',
+  left_thigh: '左大腿圍 (cm)',
+  right_thigh: '右大腿圍 (cm)',
+  left_calf: '左小腿圍 (cm)',
+  right_calf: '右小腿圍 (cm)'
+};
+function openField(field) {
+  state.currentField = field;
+  document.getElementById('fm-title').textContent = '紀錄 · ' + FIELD_LABELS[field];
+  document.getElementById('fm-label').textContent = FIELD_LABELS[field];
+  // pre-fill latest
+  const sorted = [...state.records].sort((a,b)=>a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length - 1];
+  document.getElementById('fm-input').value = (latest && latest[field]) ? latest[field] : '';
+  openModal('field-modal');
+  setTimeout(()=>document.getElementById('fm-input').focus(), 300);
+}
+function saveField() {
+  const val = parseFloat(document.getElementById('fm-input').value);
+  if (isNaN(val)) { closeModal('field-modal'); return; }
+  const today = todayKey();
+  let rec = state.records.find(r => r.date === today);
+  if (!rec) {
+    rec = { date: today, height: state.user.height, sleep: 7, fatigue: 5, stress: 5, menstrual: 'none', mood: 'okay', createdAt: new Date().toISOString() };
+    state.records.push(rec);
+  }
+  rec[state.currentField] = val;
+  saveState();
+  closeModal('field-modal');
+  toast(FIELD_LABELS[state.currentField].split(' ')[0] + ' 已紀錄 ✓');
+  renderAll();
+}
+
+// ========== HISTORY ==========
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!list) return;
+  const sorted = [...state.records].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 7);
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-text">還沒有紀錄<br>從上方開始你的第一筆</div></div>';
+    return;
+  }
+  list.innerHTML = sorted.map(r => `
+    <div class="history-item">
+      <div>
+        <div class="history-date">${fmtDate(r.date)}</div>
+        <div class="history-meta">${r.fat ? '體脂 '+r.fat+'%' : ''} ${r.bmi ? '· BMI '+r.bmi : ''}</div>
+      </div>
+      <div class="history-weight">${r.weight || '—'}<span style="font-size:12px; color: var(--ink-mute); margin-left:2px;">kg</span></div>
+    </div>
+  `).join('');
+}
+
+// ========== WORKOUT ==========
+const DAY_NAMES = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+const TYPE_LABELS = {stretch:'伸展',yoga:'瑜伽',walk:'散步',cardio:'有氧',strength:'重訓',hiit:'HIIT',rest:'休息'};
+function renderWorkout() {
+  const today = new Date().getDay();
+  const container = document.getElementById('workout-week');
+  container.innerHTML = '';
+  for (let i = 1; i <= 7; i++) {
+    const dayIdx = i % 7;
+    const s = state.schedules[dayIdx];
+    const div = document.createElement('div');
+    div.className = 'day-card' + (dayIdx === today ? ' today' : '');
+    div.onclick = () => openWorkoutModal(dayIdx);
+    const log = state.logs.find(l => {
+      const d = new Date(l.date);
+      return d.getDay() === dayIdx && isThisWeek(l.date);
+    });
+    const status = log ? 'done' : (s ? '' : 'rest');
+    const statusText = log ? '已完成' : (s ? '已安排' : '未安排');
+    div.innerHTML = `
+      <div class="day-card-head">
+        <div class="day-name ${dayIdx===today?'today-badge':''}">${DAY_NAMES[dayIdx]}</div>
+        <div class="day-status ${status}">${statusText}</div>
+      </div>
+      <div class="day-workout">
+        <span>${s ? s.name + ' · ' + TYPE_LABELS[s.type] : '點擊安排運動'}</span>
+        <span class="day-duration">${s ? s.duration + ' 分' : ''}</span>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+
+  // Suggestions
+  const sugg = document.getElementById('workout-suggestions');
+  const latest = [...state.records].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const score = calcRecovery(latest);
+  let suggestions = [];
+  if (score === '—' || score >= 80) {
+    suggestions = [
+      {name:'低衝擊有氧 (晨間版)', type:'cardio', duration:15, url:'https://www.youtube.com/results?search_query=低衝擊有氧'},
+      {name:'快走 20 分', type:'walk', duration:20, url:''},
+      {name:'核心訓練 10 分', type:'strength', duration:10, url:'https://www.youtube.com/results?search_query=核心訓練+10分鐘'}
+    ];
+  } else if (score >= 60) {
+    suggestions = [
+      {name:'晨間瑜伽流 (10 分)', type:'yoga', duration:10, url:'https://www.youtube.com/results?search_query=晨間瑜伽'},
+      {name:'店裡空檔伸展 5 分', type:'stretch', duration:5, url:''},
+      {name:'下班路上快走', type:'walk', duration:15, url:''}
+    ];
+  } else if (score >= 40) {
+    suggestions = [
+      {name:'恢復伸展 10 分', type:'stretch', duration:10, url:'https://www.youtube.com/results?search_query=恢復伸展'},
+      {name:'呼吸與身體掃描 5 分', type:'yoga', duration:5, url:''},
+      {name:'散步（不要快走）', type:'walk', duration:10, url:''}
+    ];
+  } else {
+    suggestions = [
+      {name:'今天請完全休息', type:'rest', duration:0, url:''},
+      {name:'熱水澡 + 5 分腿部伸展', type:'stretch', duration:5, url:''},
+      {name:'冥想或呼吸練習', type:'yoga', duration:5, url:'https://www.youtube.com/results?search_query=睡前冥想'}
+    ];
+  }
+  sugg.innerHTML = suggestions.map(s => `
+    <div class="day-card" onclick="${s.url?`window.open('${s.url}','_blank')`:''}">
+      <div class="day-card-head">
+        <div class="day-name">${s.name}</div>
+        <div class="day-status">${s.duration?s.duration+' 分':''}</div>
+      </div>
+      <div class="day-workout"><span>${TYPE_LABELS[s.type]}</span>${s.url?'<span class="day-duration">▶ 影片</span>':''}</div>
+    </div>
+  `).join('');
+}
+
+function isThisWeek(dateStr) {
+  const d = new Date(dateStr);
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(today.getDate() - today.getDay());
+  start.setHours(0,0,0,0);
+  return d >= start;
+}
+
+function openWorkoutModal(dayIdx) {
+  state.currentWorkoutDay = dayIdx;
+  document.getElementById('wm-title').textContent = DAY_NAMES[dayIdx] + ' · 運動安排';
+  const s = state.schedules[dayIdx];
+  document.getElementById('wm-name').value = s?.name || '';
+  document.getElementById('wm-duration').value = s?.duration || '';
+  document.getElementById('wm-url').value = s?.url || '';
+  document.getElementById('wm-note').value = s?.note || '';
+  setChipValue('chips-type', s?.type || 'stretch');
+  const today = new Date().getDay();
+  document.getElementById('wm-complete-section').style.display = (dayIdx === today && s) ? 'block' : 'none';
+  openModal('workout-modal');
+}
+
+function saveWorkoutSchedule() {
+  const name = document.getElementById('wm-name').value.trim();
+  if (!name) { toast('請輸入運動名稱'); return; }
+  state.schedules[state.currentWorkoutDay] = {
+    name,
+    type: getChipValue('chips-type'),
+    duration: parseInt(document.getElementById('wm-duration').value) || 0,
+    url: document.getElementById('wm-url').value.trim(),
+    note: document.getElementById('wm-note').value.trim()
+  };
+  saveState();
+  closeModal('workout-modal');
+  toast('運動已安排 ✓');
+  renderWorkout();
+}
+
+function saveWorkoutLog() {
+  const log = {
+    date: todayKey(),
+    dayOfWeek: state.currentWorkoutDay,
+    actual: parseInt(document.getElementById('wm-actual').value) || 0,
+    intensity: document.getElementById('wm-intensity').value,
+    feeling: document.getElementById('wm-feeling').value.trim(),
+    reaction: getChipValue('chips-reaction')
+  };
+  state.logs.push(log);
+  saveState();
+  closeModal('workout-modal');
+  toast('完成紀錄已儲存 ✓');
+  renderAll();
+}
+
+function renderTodayWorkout() {
+  const today = new Date().getDay();
+  const s = state.schedules[today];
+  if (s) {
+    document.getElementById('wt-name').textContent = s.name;
+    document.getElementById('wt-meta').textContent = `${TYPE_LABELS[s.type]} · ${s.duration} 分鐘`;
+    const actions = document.querySelector('#workout-today-card .workout-today-actions');
+    actions.innerHTML = `
+      ${s.url ? `<button class="btn btn-soft" onclick="window.open('${s.url}','_blank')">▶ 開影片</button>` : ''}
+      <button class="btn btn-primary" onclick="openWorkoutModal(${today})">完成紀錄</button>
+    `;
+  } else {
+    document.getElementById('wt-name').textContent = '今日尚未安排運動';
+    document.getElementById('wt-meta').textContent = '到「運動」頁面安排一週計畫';
+  }
+}
+
+// ========== TRENDS ==========
+let trendRange = 7;
+function setupFilters() {
+  document.querySelectorAll('.filter-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      trendRange = p.dataset.range;
+      renderTrends();
+    });
+  });
+}
+
+function renderTrends() {
+  const list = document.getElementById('trends-list');
+  let records = [...state.records].sort((a,b)=>a.date.localeCompare(b.date));
+  if (trendRange !== 'all') {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - parseInt(trendRange));
+    records = records.filter(r => new Date(r.date) >= cutoff);
+  }
+  if (records.length < 2) {
+    list.innerHTML = '<div class="empty"><div class="empty-emoji">∿</div><div class="empty-text">需要至少 2 筆紀錄才能看趨勢<br>持續記錄幾天再來看</div></div>';
+    return;
+  }
+  const metrics = [
+    {key:'weight', name:'體重', unit:'kg'},
+    {key:'fat', name:'體脂', unit:'%'},
+    {key:'bmi', name:'BMI', unit:''},
+    {key:'waist', name:'腰圍', unit:'cm'},
+    {key:'hip', name:'臀圍', unit:'cm'},
+    {key:'sleep', name:'睡眠', unit:'小時'},
+    {key:'fatigue', name:'疲勞', unit:''},
+    {key:'stress', name:'壓力', unit:''}
+  ];
+  list.innerHTML = metrics.map(m => {
+    const data = records.map(r => r[m.key]).filter(v => v !== undefined && v !== null && !isNaN(v));
+    if (data.length < 2) return '';
+    const first = data[0], last = data[data.length-1];
+    const diff = +(last - first).toFixed(1);
+    const diffClass = diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat');
+    const diffSym = diff > 0 ? '↑' : (diff < 0 ? '↓' : '—');
+    return `
+      <div class="trend-card">
+        <div class="trend-head">
+          <div class="trend-name">${m.name}</div>
+          <div class="trend-value">${last}<span class="metric-unit">${m.unit}</span>
+            <span class="trend-value-diff metric-diff ${diffClass}">${diffSym} ${Math.abs(diff)}</span>
+          </div>
+        </div>
+        ${renderChart(data)}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderChart(data) {
+  const w = 320, h = 60, pad = 4;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = max - min || 1;
+  const step = (w - pad*2) / (data.length - 1);
+  const points = data.map((v, i) => {
+    const x = pad + i * step;
+    const y = pad + (h - pad*2) * (1 - (v - min) / range);
+    return [x, y];
+  });
+  const path = points.map((p,i) => (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const area = path + ` L${points[points.length-1][0].toFixed(1)},${h} L${points[0][0].toFixed(1)},${h} Z`;
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <path d="${area}" fill="rgba(168, 184, 154, 0.15)"/>
+      <path d="${path}" fill="none" stroke="#7A8B6F" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+      ${points.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.5" fill="#7A8B6F"/>`).join('')}
+    </svg>
+  `;
+}
+
+// ========== ME / Achievements ==========
+function renderMe() {
+  if (state.user) {
+    document.getElementById('me-name').textContent = state.user.name;
+    document.getElementById('me-sub').textContent = `已記錄 ${state.records.length} 天`;
+  }
+  const achievements = [
+    {code:'first', title:'踏出第一步', desc:'完成第一筆紀錄', icon:'✿', check: () => state.records.length >= 1},
+    {code:'week3', title:'規律之始', desc:'連續記錄 3 天', icon:'☘', check: () => countConsecutive() >= 3},
+    {code:'week7', title:'一週堅持', desc:'連續記錄 7 天', icon:'❀', check: () => countConsecutive() >= 7},
+    {code:'workout3', title:'動起來了', desc:'本週完成 3 次運動', icon:'☼', check: () => state.logs.filter(l => isThisWeek(l.date)).length >= 3},
+    {code:'sleep7', title:'好眠週', desc:'本週平均睡眠 ≥ 7 小時', icon:'☾', check: () => avgThisWeek('sleep') >= 7},
+    {code:'gentle', title:'生理期溫柔', desc:'生理期完成低強度運動', icon:'♡', check: () => state.logs.some(l => {
+      const r = state.records.find(x => x.date === l.date);
+      return r && (r.menstrual === 'pre' || r.menstrual === 'during') && (l.intensity === 'low');
+    })},
+    {code:'recover', title:'好恢復', desc:'運動後反應「恢復很好」', icon:'✦', check: () => state.logs.some(l => l.reaction === 'well_recovered')},
+    {code:'destress', title:'壓力下降', desc:'本週平均壓力下降', icon:'❁', check: () => avgThisWeek('stress') < avgLastWeek('stress')}
+  ];
+  document.getElementById('ach-grid').innerHTML = achievements.map(a => {
+    const unlocked = a.check();
+    return `
+      <div class="ach ${unlocked?'unlocked':'locked'}">
+        <div class="ach-icon">${a.icon}</div>
+        <div class="ach-title">${a.title}</div>
+        <div class="ach-desc">${a.desc}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function countConsecutive() {
+  if (state.records.length === 0) return 0;
+  const dates = [...new Set(state.records.map(r => r.date))].sort();
+  let count = 1;
+  for (let i = dates.length - 1; i > 0; i--) {
+    const d1 = new Date(dates[i]);
+    const d2 = new Date(dates[i-1]);
+    if ((d1 - d2) / 86400000 === 1) count++;
+    else break;
+  }
+  return count;
+}
+function avgThisWeek(key) {
+  const vals = state.records.filter(r => isThisWeek(r.date)).map(r => r[key]).filter(v => v !== undefined);
+  return vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : 0;
+}
+function avgLastWeek(key) {
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(today.getDate() - today.getDay() - 7);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  const vals = state.records.filter(r => {
+    const d = new Date(r.date);
+    return d >= start && d < end;
+  }).map(r => r[key]).filter(v => v !== undefined);
+  return vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : 999;
+}
+
+// ========== EXPORT ==========
+function exportData() {
+  if (state.records.length === 0) { toast('還沒有資料可以匯出'); return; }
+  const fields = ['date','weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh','left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress','menstrual','mood','note'];
+  const header = fields.join(',');
+  const rows = state.records.map(r => fields.map(f => {
+    const v = r[f];
+    if (v === undefined || v === null) return '';
+    return String(v).includes(',') ? `"${v}"` : v;
+  }).join(','));
+  const csv = '\uFEFF' + [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `bodynote_${todayKey()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('已下載 CSV ✓');
+}
+
+function clearAllData() {
+  if (!confirm('確定要清除所有資料嗎？此動作無法復原。')) return;
+  if (!confirm('真的確定？所有紀錄都會消失。')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+// ========== MODAL ==========
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-bg').forEach(bg => {
+  bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('active'); });
+});
+
+// ========== TOAST ==========
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ========== GO ==========
+init();
+</script>
+</body>
+</html>
