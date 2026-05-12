@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #FAF7F2;
@@ -750,6 +751,7 @@ input[type="range"]::-moz-range-thumb {
   align-items: center;
   padding: 40px 24px;
   text-align: center;
+  overflow-y: auto;
 }
 .onboard.hidden { display: none; }
 .onboard h1 {
@@ -772,6 +774,120 @@ input[type="range"]::-moz-range-thumb {
   width: 100%;
   max-width: 320px;
 }
+.auth-switch {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--ink-mute);
+}
+.auth-switch a {
+  color: var(--sage-deep);
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+.auth-tip {
+  background: var(--sage-bg);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 16px;
+  text-align: left;
+  line-height: 1.6;
+}
+.auth-error {
+  background: var(--rose-soft);
+  color: #B07878;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  margin: 12px 0;
+  text-align: left;
+  line-height: 1.6;
+}
+.sync-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  border-radius: 8px;
+  background: var(--sage-bg);
+  color: var(--sage-deep);
+  margin-left: 6px;
+  font-family: var(--sans);
+  letter-spacing: 0.3px;
+}
+.sync-badge.offline {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+/* All records management */
+.manage-item {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.manage-item:active { transform: scale(0.98); }
+.manage-item-left { flex: 1; min-width: 0; }
+.manage-date {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.manage-meta {
+  font-size: 11px;
+  color: var(--ink-mute);
+}
+.manage-actions {
+  display: flex;
+  gap: 6px;
+}
+.icon-btn {
+  width: 32px; height: 32px;
+  background: var(--bg-soft);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-btn.danger { background: var(--rose-soft); color: #B07878; }
+.icon-btn.edit { background: var(--sage-bg); color: var(--sage-deep); }
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.search-bar input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-family: var(--sans);
+  font-size: 13px;
+  background: var(--card);
+}
+.search-bar input:focus { outline: none; border-color: var(--sage); }
+
+/* Edit modal large form */
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.edit-form-grid .full { grid-column: span 2; }
 
 /* Toast */
 .toast {
@@ -1244,26 +1360,67 @@ input[type="range"]::-moz-range-thumb {
 </head>
 <body>
 
-<!-- Onboarding -->
+<!-- Auth & Onboarding -->
 <div class="onboard" id="onboard">
   <h1>Body<span>Note</span></h1>
-  <p>溫柔地記錄身體的每一天<br>不催促、不評價</p>
-  <div class="onboard-form">
+
+  <!-- Login screen -->
+  <div id="auth-login" style="width: 100%; max-width: 320px;">
+    <p style="margin-bottom: 24px;">溫柔地記錄身體的每一天<br>不催促、不評價</p>
     <div class="form-group">
-      <label class="form-label">你的名字（怎麼稱呼你）</label>
-      <input type="text" class="form-input" id="onboard-name" placeholder="例如：小雨">
+      <label class="form-label">電子信箱</label>
+      <input type="email" class="form-input" id="login-email" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">密碼</label>
+      <input type="password" class="form-input" id="login-password" placeholder="6 位以上" autocomplete="current-password">
+    </div>
+    <div class="auth-error" id="login-error" style="display:none;"></div>
+    <button class="submit-btn" onclick="doLogin()">登入</button>
+    <div class="auth-switch">
+      還沒有帳號？<a onclick="showSignup()">建立帳號</a>
+    </div>
+    <div class="auth-tip">
+      💡 你的資料會儲存在雲端，換手機也看得到。<br>
+      免費、不會掉、隨時可以匯出備份。
+    </div>
+  </div>
+
+  <!-- Signup screen -->
+  <div id="auth-signup" style="display:none; width: 100%; max-width: 320px;">
+    <p style="margin-bottom: 24px;">建立你的健康紀錄空間</p>
+    <div class="form-group">
+      <label class="form-label">怎麼稱呼你</label>
+      <input type="text" class="form-input" id="signup-name" placeholder="例如：小雨">
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">身高（公分）</label>
-        <input type="number" class="form-input" id="onboard-height" placeholder="160" step="0.1">
+        <label class="form-label">身高 (cm)</label>
+        <input type="number" class="form-input" id="signup-height" placeholder="160" step="0.1">
       </div>
       <div class="form-group">
         <label class="form-label">目前體重</label>
-        <input type="number" class="form-input" id="onboard-weight" placeholder="55" step="0.1">
+        <input type="number" class="form-input" id="signup-weight" placeholder="55" step="0.1">
       </div>
     </div>
-    <button class="submit-btn" onclick="finishOnboard()">開始記錄</button>
+    <div class="form-group">
+      <label class="form-label">電子信箱</label>
+      <input type="email" class="form-input" id="signup-email" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">設定密碼</label>
+      <input type="password" class="form-input" id="signup-password" placeholder="至少 6 位" autocomplete="new-password">
+    </div>
+    <div class="auth-error" id="signup-error" style="display:none;"></div>
+    <button class="submit-btn" onclick="doSignup()">建立帳號</button>
+    <div class="auth-switch">
+      已經有帳號了？<a onclick="showLogin()">登入</a>
+    </div>
+  </div>
+
+  <!-- Loading screen -->
+  <div id="auth-loading" style="display:none;">
+    <p style="font-family: var(--serif); font-style: italic; font-size: 18px;">同步資料中...</p>
   </div>
 </div>
 
@@ -1271,7 +1428,7 @@ input[type="range"]::-moz-range-thumb {
 
 <!-- Header -->
 <div class="header">
-  <h1>Body<span>Note</span></h1>
+  <h1>Body<span>Note</span><span class="sync-badge" id="sync-badge" style="display:none;">同步中</span></h1>
   <div class="date" id="today-date"></div>
 </div>
 
@@ -1709,6 +1866,13 @@ input[type="range"]::-moz-range-thumb {
   <div class="ach-grid" id="ach-grid"></div>
 
   <div class="section-title" style="margin: 20px 0 12px;">工具</div>
+  <div class="day-card" onclick="openManageRecords()">
+    <div class="day-card-head">
+      <div class="day-name">📋 所有紀錄（編輯／刪除）</div>
+      <div class="day-status">→</div>
+    </div>
+    <div class="day-workout">管理你所有的身體紀錄</div>
+  </div>
   <div class="day-card" onclick="switchTab('ai')">
     <div class="day-card-head">
       <div class="day-name">⚘ AI 教練</div>
@@ -1739,12 +1903,19 @@ input[type="range"]::-moz-range-thumb {
     </div>
     <div class="day-workout">下載所有資料備份</div>
   </div>
+  <div class="day-card" onclick="doLogout()">
+    <div class="day-card-head">
+      <div class="day-name">登出</div>
+      <div class="day-status" id="user-email"></div>
+    </div>
+    <div class="day-workout">資料會留在雲端，下次登入還會在</div>
+  </div>
   <div class="day-card" onclick="clearAllData()">
     <div class="day-card-head">
       <div class="day-name" style="color: #B07878;">清除所有資料</div>
       <div class="day-status">⟲</div>
     </div>
-    <div class="day-workout">重新開始（無法復原）</div>
+    <div class="day-workout">永久刪除雲端所有紀錄（無法復原）</div>
   </div>
 
   <div style="text-align: center; padding: 30px 0 20px; color: var(--ink-mute); font-family: var(--serif); font-style: italic; font-size: 12px;">
@@ -1990,6 +2161,106 @@ input[type="range"]::-moz-range-thumb {
   </div>
 </div>
 
+<!-- Manage all records modal -->
+<div class="modal-bg" id="manage-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">所有紀錄</div>
+    <div class="modal-sub">點任一筆編輯，或滑動刪除</div>
+    <div class="search-bar">
+      <input type="text" id="manage-search" placeholder="搜尋日期（例如 2024-03）" oninput="renderManageList()">
+    </div>
+    <div id="manage-list" style="max-height: 60vh; overflow-y: auto;"></div>
+  </div>
+</div>
+
+<!-- Edit record modal -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">編輯紀錄</div>
+    <div class="modal-sub" id="edit-modal-sub">修改後按儲存</div>
+    <div class="edit-form-grid">
+      <div class="form-group">
+        <label class="form-label">日期</label>
+        <input type="date" class="form-input" id="edit-date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">體重 (kg)</label>
+        <input type="number" class="form-input" id="edit-weight" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">體脂 (%)</label>
+        <input type="number" class="form-input" id="edit-fat" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">BMI</label>
+        <input type="number" class="form-input" id="edit-bmi" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">腰圍</label>
+        <input type="number" class="form-input" id="edit-waist" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">臀圍</label>
+        <input type="number" class="form-input" id="edit-hip" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">胸圍</label>
+        <input type="number" class="form-input" id="edit-chest" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">內臟脂肪</label>
+        <input type="number" class="form-input" id="edit-visceral" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">左大腿</label>
+        <input type="number" class="form-input" id="edit-left_thigh" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">右大腿</label>
+        <input type="number" class="form-input" id="edit-right_thigh" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">左小腿</label>
+        <input type="number" class="form-input" id="edit-left_calf" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">右小腿</label>
+        <input type="number" class="form-input" id="edit-right_calf" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">肩寬</label>
+        <input type="number" class="form-input" id="edit-shoulder" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">上臂</label>
+        <input type="number" class="form-input" id="edit-upper_arm" step="0.1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">睡眠 (小時)</label>
+        <input type="number" class="form-input" id="edit-sleep" step="0.5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">疲勞 (1-10)</label>
+        <input type="number" class="form-input" id="edit-fatigue" min="1" max="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">壓力 (1-10)</label>
+        <input type="number" class="form-input" id="edit-stress" min="1" max="10">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">備註</label>
+        <textarea class="form-textarea" id="edit-note"></textarea>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 16px;">
+      <button class="btn btn-ghost" onclick="closeModal('edit-modal')">取消</button>
+      <button class="btn btn-primary" onclick="saveEditedRecord()">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- Photo viewer -->
 <div class="photo-viewer" id="photo-viewer">
   <button class="photo-viewer-close" onclick="closePhotoViewer()">×</button>
@@ -2003,88 +2274,309 @@ input[type="range"]::-moz-range-thumb {
 <div class="toast" id="toast"></div>
 
 <script>
+// ============================================
+// ⚠️  把下面兩個字串換成你自己的 Supabase 資訊  ⚠️
+// 在 GitHub 編輯這個檔案時，把這兩行的值替換掉
+// ============================================
+const SUPABASE_URL = 'https://kjebahthpwlrjmybfbkr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_Qm-q7b01HT1hly5RNHU1rg_NQ9v-ew5';
+// ============================================
+
+// 檢查設定是否完成
+if (SUPABASE_KEY.includes('PASTE_YOUR')) {
+  document.body.innerHTML = `
+    <div style="padding:40px 24px; max-width:480px; margin:60px auto; font-family: 'Noto Sans TC', sans-serif; line-height:1.7; color:#3D3A35;">
+      <h2 style="font-family:'Fraunces',serif; font-style:italic; color:#7A8B6F; margin-bottom:12px;">⚠️ 還沒設定 Supabase Key</h2>
+      <p>請在 GitHub 上編輯這個 HTML 檔案，找到開頭的 SUPABASE_KEY 那一行，把 <code style="background:#EEF2EA; padding:2px 6px; border-radius:4px;">PASTE_YOUR_PUBLISHABLE_KEY_HERE</code> 換成你的 Publishable key（以 sb_publishable_ 開頭那串）。</p>
+      <p style="font-size:13px; color:#8B857C; margin-top:24px;">在你的 Supabase 後台：左側選單 → API Keys → Publishable and secret API keys 分頁 → 複製 Publishable key</p>
+    </div>
+  `;
+  throw new Error('Supabase key not configured');
+}
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ========== STATE ==========
-const STORAGE_KEY = 'bodynote_data_v2';
+const STORAGE_KEY = 'bodynote_data_v3';
 let state = {
-  user: null,
+  user: null,         // {id, email, name, height}
+  session: null,
   records: [],
   schedules: {},
   logs: [],
-  photos: [],         // {id, angle, dataUrl, date, weight, fat, menstrual, note, locked}
-  videos: [],         // 使用者自訂收藏
-  favorites: [],      // 收藏的 video id (library 或 custom)
+  photos: [],
+  videos: [],
+  favorites: [],
   apiKey: null,
   aiMessages: [],
-  photoPassword: null,// hashed
+  photoPassword: null,
   photoUnlocked: false,
   currentWorkoutDay: null,
   currentField: null,
   importData: null,
   compareSelection: { A: null, B: null, current: null },
-  currentPhotoId: null
+  currentPhotoId: null,
+  editingRecordId: null,
+  isOnline: true
 };
 
 // ========== INIT ==========
-function init() {
-  loadState();
+async function init() {
+  loadLocalCache();
   updateDate();
-  if (!state.user) {
-    document.getElementById('onboard').classList.remove('hidden');
-  } else {
-    renderAll();
-  }
   setupChips();
   setupFilters();
   setupBMI();
+
+  // 檢查是否已登入
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    state.session = session;
+    await loadUserData(session.user);
+    document.getElementById('onboard').classList.add('hidden');
+    renderAll();
+  } else {
+    document.getElementById('onboard').classList.remove('hidden');
+    showLogin();
+  }
+
+  // 監聽連線狀態
+  window.addEventListener('online', () => { state.isOnline = true; toast('已連線'); syncPending(); });
+  window.addEventListener('offline', () => { state.isOnline = false; toast('離線模式'); });
+  state.isOnline = navigator.onLine;
 }
 
-function loadState() {
+function showLogin() {
+  document.getElementById('auth-login').style.display = '';
+  document.getElementById('auth-signup').style.display = 'none';
+  document.getElementById('auth-loading').style.display = 'none';
+}
+function showSignup() {
+  document.getElementById('auth-login').style.display = 'none';
+  document.getElementById('auth-signup').style.display = '';
+  document.getElementById('auth-loading').style.display = 'none';
+}
+function showAuthLoading() {
+  document.getElementById('auth-login').style.display = 'none';
+  document.getElementById('auth-signup').style.display = 'none';
+  document.getElementById('auth-loading').style.display = '';
+}
+
+function showAuthError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = '';
+}
+function hideAuthError(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+// ========== AUTH ==========
+async function doLogin() {
+  hideAuthError('login-error');
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { showAuthError('login-error', '請填寫信箱與密碼'); return; }
+
+  showAuthLoading();
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    showLogin();
+    showAuthError('login-error', '登入失敗：' + (error.message.includes('Invalid') ? '帳號或密碼錯誤' : error.message));
+    return;
+  }
+  state.session = data.session;
+  await loadUserData(data.user);
+  document.getElementById('onboard').classList.add('hidden');
+  renderAll();
+  toast('歡迎回來');
+}
+
+async function doSignup() {
+  hideAuthError('signup-error');
+  const name = document.getElementById('signup-name').value.trim() || '你';
+  const height = parseFloat(document.getElementById('signup-height').value);
+  const weight = parseFloat(document.getElementById('signup-weight').value);
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+
+  if (!email || !password) { showAuthError('signup-error', '請填寫信箱與密碼'); return; }
+  if (password.length < 6) { showAuthError('signup-error', '密碼至少 6 位'); return; }
+  if (!height || !weight) { showAuthError('signup-error', '請填寫身高與體重'); return; }
+
+  showAuthLoading();
+  const { data, error } = await sb.auth.signUp({ email, password });
+  if (error) {
+    showSignup();
+    showAuthError('signup-error', '註冊失敗：' + error.message);
+    return;
+  }
+
+  // 註冊後可能會直接給 session（若停用 email confirmation），否則要登入
+  let session = data.session;
+  if (!session) {
+    const loginResult = await sb.auth.signInWithPassword({ email, password });
+    if (loginResult.error) {
+      showSignup();
+      showAuthError('signup-error', '註冊成功，但自動登入失敗。請手動登入。');
+      return;
+    }
+    session = loginResult.data.session;
+  }
+
+  state.session = session;
+
+  // 寫入 profile
+  await sb.from('profiles').upsert({
+    id: session.user.id,
+    name, height,
+    created_at: new Date().toISOString()
+  });
+
+  // 寫入第一筆紀錄
+  const today = todayKey();
+  await sb.from('body_records').insert({
+    user_id: session.user.id,
+    date: today,
+    weight, height,
+    bmi: +(weight / Math.pow(height/100, 2)).toFixed(1),
+    sleep: 7, fatigue: 5, stress: 5, menstrual: 'none', mood: 'okay'
+  });
+
+  await loadUserData(session.user);
+  document.getElementById('onboard').classList.add('hidden');
+  renderAll();
+  toast(`歡迎，${name}`);
+}
+
+async function doLogout() {
+  if (!confirm('要登出嗎？資料會留在雲端，下次登入會再出現。')) return;
+  await sb.auth.signOut();
+  state = {
+    ...state,
+    user: null, session: null,
+    records: [], schedules: {}, logs: [],
+    photos: [], videos: [], favorites: [],
+    aiMessages: [], photoUnlocked: false
+  };
+  saveLocalCache();
+  location.reload();
+}
+
+// ========== LOAD DATA FROM SUPABASE ==========
+async function loadUserData(authUser) {
+  showSyncBadge(true);
+
+  // profile
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', authUser.id).single();
+  state.user = {
+    id: authUser.id,
+    email: authUser.email,
+    name: profile?.name || '你',
+    height: profile?.height || 160
+  };
+
+  // records
+  const { data: recs } = await sb.from('body_records').select('*').eq('user_id', authUser.id).order('date', { ascending: true });
+  state.records = recs || [];
+
+  // schedules
+  const { data: scheds } = await sb.from('schedules').select('*').eq('user_id', authUser.id);
+  state.schedules = {};
+  (scheds || []).forEach(s => {
+    state.schedules[s.day_of_week] = {
+      id: s.id, name: s.name, type: s.type, duration: s.duration, url: s.url, note: s.note
+    };
+  });
+
+  // logs
+  const { data: logs } = await sb.from('workout_logs').select('*').eq('user_id', authUser.id).order('date', { ascending: false });
+  state.logs = (logs || []).map(l => ({
+    id: l.id, date: l.date, dayOfWeek: l.day_of_week,
+    actual: l.actual, intensity: l.intensity,
+    feeling: l.feeling, reaction: l.reaction
+  }));
+
+  // favorites
+  const { data: favs } = await sb.from('favorites').select('*').eq('user_id', authUser.id);
+  state.favorites = (favs || []).map(f => f.video_id);
+
+  // custom videos
+  const { data: vids } = await sb.from('custom_videos').select('*').eq('user_id', authUser.id);
+  state.videos = (vids || []).map(v => ({
+    id: v.id, title: v.title, creator: v.creator,
+    url: v.url, duration: v.duration, tags: v.tags || []
+  }));
+
+  // photos (metadata only, dataUrl 由 storage 取)
+  const { data: photos } = await sb.from('photos').select('*').eq('user_id', authUser.id).order('date', { ascending: false });
+  state.photos = await Promise.all((photos || []).map(async p => {
+    let dataUrl = '';
+    if (p.storage_path) {
+      const { data } = await sb.storage.from('photos').createSignedUrl(p.storage_path, 3600);
+      dataUrl = data?.signedUrl || '';
+    }
+    return {
+      id: p.id, angle: p.angle, dataUrl,
+      storage_path: p.storage_path,
+      date: p.date, weight: p.weight, fat: p.fat,
+      menstrual: p.menstrual, note: p.note, locked: p.locked
+    };
+  }));
+
+  // 本機儲存：API key、AI 訊息、密碼（這些不上雲）
+  loadLocalCache();
+
+  saveLocalCache();
+  showSyncBadge(false);
+  document.getElementById('user-email').textContent = authUser.email;
+}
+
+function showSyncBadge(loading) {
+  const b = document.getElementById('sync-badge');
+  if (!b) return;
+  if (loading) {
+    b.textContent = '同步中';
+    b.classList.remove('offline');
+    b.style.display = '';
+  } else {
+    b.style.display = 'none';
+  }
+}
+
+// 本機快取（API key、AI 訊息、密碼設定）
+function loadLocalCache() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (raw) {
-    try { state = { ...state, ...JSON.parse(raw) }; } catch(e) {}
-  } else {
-    // 嘗試從 v1 搬資料
-    const v1 = localStorage.getItem('bodynote_data_v1');
-    if (v1) {
-      try {
-        const old = JSON.parse(v1);
-        state = { ...state, ...old };
-        saveState();
-        toast('已從舊版本搬移資料');
-      } catch(e) {}
-    }
+    try {
+      const cache = JSON.parse(raw);
+      if (cache.apiKey) state.apiKey = cache.apiKey;
+      if (cache.aiMessages) state.aiMessages = cache.aiMessages;
+      if (cache.photoPassword) state.photoPassword = cache.photoPassword;
+    } catch(e) {}
   }
-  // photo unlock 每次 reset
-  state.photoUnlocked = false;
 }
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function saveLocalCache() {
+  const cache = {
+    apiKey: state.apiKey,
+    aiMessages: state.aiMessages,
+    photoPassword: state.photoPassword
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cache)); } catch(e) {}
+}
+
+// saveState 是舊版本機儲存，改成只存 cache
+function saveState() { saveLocalCache(); }
+
+// 離線時的待同步佇列（暫時簡單實作：直接 toast 提示）
+async function syncPending() {
+  // 未來可以加離線佇列
+}
 
 function updateDate() {
   const d = new Date();
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   document.getElementById('today-date').textContent = `${months[d.getMonth()]} ${d.getDate()}`;
-}
-
-function finishOnboard() {
-  const name = document.getElementById('onboard-name').value.trim() || '你';
-  const height = parseFloat(document.getElementById('onboard-height').value);
-  const weight = parseFloat(document.getElementById('onboard-weight').value);
-  if (!height || !weight) { toast('請填寫身高與體重'); return; }
-  state.user = { name, height, createdAt: new Date().toISOString() };
-  // 第一筆紀錄
-  const today = todayKey();
-  state.records.push({
-    date: today,
-    weight, height,
-    bmi: +(weight / Math.pow(height/100, 2)).toFixed(1),
-    sleep: 7, fatigue: 5, stress: 5,
-    menstrual: 'none', mood: 'okay',
-    createdAt: new Date().toISOString()
-  });
-  saveState();
-  document.getElementById('onboard').classList.add('hidden');
-  renderAll();
-  toast(`歡迎，${name}`);
 }
 
 // ========== TAB SWITCH ==========
@@ -2152,10 +2644,11 @@ function fmtDate(key) {
 }
 
 // ========== RECORD ==========
-function saveRecord() {
+async function saveRecord() {
   if (!state.user) return;
   const fields = ['weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh','left_calf','right_calf','shoulder','upper_arm'];
   const record = {
+    user_id: state.user.id,
     date: todayKey(),
     height: state.user.height,
     sleep: parseFloat(document.getElementById('r-sleep').value),
@@ -2163,8 +2656,7 @@ function saveRecord() {
     stress: parseInt(document.getElementById('r-stress').value),
     menstrual: getChipValue('chips-menstrual'),
     mood: getChipValue('chips-mood'),
-    note: document.getElementById('r-note').value.trim(),
-    createdAt: new Date().toISOString()
+    note: document.getElementById('r-note').value.trim() || null
   };
   fields.forEach(f => {
     const el = document.getElementById('r-' + f);
@@ -2176,12 +2668,30 @@ function saveRecord() {
   if (record.weight && state.user.height) {
     record.bmi = +(record.weight / Math.pow(state.user.height/100, 2)).toFixed(1);
   }
-  // upsert by date
+
+  // upsert to Supabase
+  const { data, error } = await sb.from('body_records')
+    .upsert(record, { onConflict: 'user_id,date' })
+    .select()
+    .single();
+
+  if (error) {
+    toast('儲存失敗：' + error.message);
+    return;
+  }
+
+  // update local
   const idx = state.records.findIndex(r => r.date === record.date);
-  if (idx >= 0) state.records[idx] = { ...state.records[idx], ...record };
-  else state.records.push(record);
-  saveState();
+  if (idx >= 0) state.records[idx] = data;
+  else state.records.push(data);
+
   toast('紀錄已儲存 ✓');
+  // 清空表單避免下次帶入舊值
+  fields.forEach(f => {
+    const el = document.getElementById('r-' + f);
+    if (el) el.value = '';
+  });
+  document.getElementById('r-note').value = '';
   renderAll();
   switchTab('home');
 }
@@ -2338,17 +2848,28 @@ function openField(field) {
   openModal('field-modal');
   setTimeout(()=>document.getElementById('fm-input').focus(), 300);
 }
-function saveField() {
+async function saveField() {
   const val = parseFloat(document.getElementById('fm-input').value);
   if (isNaN(val)) { closeModal('field-modal'); return; }
   const today = todayKey();
   let rec = state.records.find(r => r.date === today);
+  const patch = {
+    user_id: state.user.id,
+    date: today,
+    height: state.user.height,
+    [state.currentField]: val
+  };
   if (!rec) {
-    rec = { date: today, height: state.user.height, sleep: 7, fatigue: 5, stress: 5, menstrual: 'none', mood: 'okay', createdAt: new Date().toISOString() };
-    state.records.push(rec);
+    Object.assign(patch, { sleep: 7, fatigue: 5, stress: 5, menstrual: 'none', mood: 'okay' });
   }
-  rec[state.currentField] = val;
-  saveState();
+  const { data, error } = await sb.from('body_records')
+    .upsert(patch, { onConflict: 'user_id,date' })
+    .select()
+    .single();
+  if (error) { toast('儲存失敗'); return; }
+  const idx = state.records.findIndex(r => r.date === today);
+  if (idx >= 0) state.records[idx] = data;
+  else state.records.push(data);
   closeModal('field-modal');
   toast(FIELD_LABELS[state.currentField].split(' ')[0] + ' 已紀錄 ✓');
   renderAll();
@@ -2470,33 +2991,48 @@ function openWorkoutModal(dayIdx) {
   openModal('workout-modal');
 }
 
-function saveWorkoutSchedule() {
+async function saveWorkoutSchedule() {
   const name = document.getElementById('wm-name').value.trim();
   if (!name) { toast('請輸入運動名稱'); return; }
-  state.schedules[state.currentWorkoutDay] = {
+  const payload = {
+    user_id: state.user.id,
+    day_of_week: state.currentWorkoutDay,
     name,
     type: getChipValue('chips-type'),
     duration: parseInt(document.getElementById('wm-duration').value) || 0,
-    url: document.getElementById('wm-url').value.trim(),
-    note: document.getElementById('wm-note').value.trim()
+    url: document.getElementById('wm-url').value.trim() || null,
+    note: document.getElementById('wm-note').value.trim() || null
   };
-  saveState();
+  const { data, error } = await sb.from('schedules')
+    .upsert(payload, { onConflict: 'user_id,day_of_week' })
+    .select()
+    .single();
+  if (error) { toast('儲存失敗：' + error.message); return; }
+  state.schedules[state.currentWorkoutDay] = {
+    id: data.id, name: data.name, type: data.type, duration: data.duration, url: data.url, note: data.note
+  };
   closeModal('workout-modal');
   toast('運動已安排 ✓');
   renderWorkout();
 }
 
-function saveWorkoutLog() {
+async function saveWorkoutLog() {
   const log = {
+    user_id: state.user.id,
     date: todayKey(),
-    dayOfWeek: state.currentWorkoutDay,
+    day_of_week: state.currentWorkoutDay,
     actual: parseInt(document.getElementById('wm-actual').value) || 0,
     intensity: document.getElementById('wm-intensity').value,
-    feeling: document.getElementById('wm-feeling').value.trim(),
+    feeling: document.getElementById('wm-feeling').value.trim() || null,
     reaction: getChipValue('chips-reaction')
   };
-  state.logs.push(log);
-  saveState();
+  const { data, error } = await sb.from('workout_logs').insert(log).select().single();
+  if (error) { toast('儲存失敗：' + error.message); return; }
+  state.logs.unshift({
+    id: data.id, date: data.date, dayOfWeek: data.day_of_week,
+    actual: data.actual, intensity: data.intensity,
+    feeling: data.feeling, reaction: data.reaction
+  });
   closeModal('workout-modal');
   toast('完成紀錄已儲存 ✓');
   renderAll();
@@ -2680,11 +3216,28 @@ function exportData() {
   toast('已下載 CSV ✓');
 }
 
-function clearAllData() {
-  if (!confirm('確定要清除所有資料嗎？此動作無法復原。')) return;
-  if (!confirm('真的確定？所有紀錄都會消失。')) return;
+async function clearAllData() {
+  if (!confirm('確定要清除雲端所有資料嗎？此動作無法復原。')) return;
+  if (!confirm('真的確定？所有紀錄、照片、運動安排都會永久消失。')) return;
+
+  toast('清除中...');
+  const uid = state.user.id;
+  // 刪 storage 照片
+  const photoFiles = state.photos.map(p => p.storage_path).filter(Boolean);
+  if (photoFiles.length) await sb.storage.from('photos').remove(photoFiles);
+
+  // 刪所有表的資料
+  await sb.from('photos').delete().eq('user_id', uid);
+  await sb.from('workout_logs').delete().eq('user_id', uid);
+  await sb.from('schedules').delete().eq('user_id', uid);
+  await sb.from('favorites').delete().eq('user_id', uid);
+  await sb.from('custom_videos').delete().eq('user_id', uid);
+  await sb.from('body_records').delete().eq('user_id', uid);
+
+  // 清本機快取
   localStorage.removeItem(STORAGE_KEY);
-  location.reload();
+  toast('已清除');
+  setTimeout(() => location.reload(), 500);
 }
 
 // ========== MODAL ==========
@@ -2822,21 +3375,24 @@ function renderVideoCard(v, isFav) {
   `;
 }
 
-function toggleFav(id) {
+async function toggleFav(id) {
   const idx = state.favorites.indexOf(id);
   if (idx >= 0) {
+    const { error } = await sb.from('favorites').delete().eq('user_id', state.user.id).eq('video_id', id);
+    if (error) { toast('操作失敗'); return; }
     state.favorites.splice(idx, 1);
     toast('已從收藏移除');
   } else {
+    const { error } = await sb.from('favorites').insert({ user_id: state.user.id, video_id: id });
+    if (error) { toast('操作失敗'); return; }
     state.favorites.push(id);
     toast('已加入收藏 ♥');
   }
-  saveState();
   renderLibrary();
   if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
 }
 
-function assignVideoToDay(videoId) {
+async function assignVideoToDay(videoId) {
   const allVideos = [...LIBRARY, ...state.videos];
   const v = allVideos.find(x => x.id === videoId);
   if (!v) return;
@@ -2844,22 +3400,56 @@ function assignVideoToDay(videoId) {
   const d = parseInt(day);
   if (!d || d < 1 || d > 7) return;
   const dayIdx = d === 7 ? 0 : d;
-  // 推測 type
   let type = 'cardio';
   if (v.tags.includes('yoga')) type = 'yoga';
   else if (v.tags.includes('stretch')) type = 'stretch';
   else if (v.tags.includes('hiit')) type = 'hiit';
   else if (v.tags.includes('cardio')) type = 'cardio';
-  
-  state.schedules[dayIdx] = {
-    name: v.title,
-    type,
-    duration: v.duration,
-    url: v.url,
-    note: v.creator
+
+  const payload = {
+    user_id: state.user.id,
+    day_of_week: dayIdx,
+    name: v.title, type, duration: v.duration, url: v.url, note: v.creator
   };
-  saveState();
+  const { data, error } = await sb.from('schedules')
+    .upsert(payload, { onConflict: 'user_id,day_of_week' })
+    .select()
+    .single();
+  if (error) { toast('排入失敗'); return; }
+  state.schedules[dayIdx] = {
+    id: data.id, name: data.name, type: data.type,
+    duration: data.duration, url: data.url, note: data.note
+  };
   toast(`已排入 ${DAY_NAMES[dayIdx]}`);
+}
+
+async function saveCustomVideo() {
+  const title = document.getElementById('vm-title').value.trim();
+  const url = document.getElementById('vm-url').value.trim();
+  if (!title || !url) { toast('標題和連結為必填'); return; }
+  const tags = Array.from(document.querySelectorAll('#chips-vtag .chip.active')).map(c => c.dataset.val);
+  const payload = {
+    user_id: state.user.id,
+    title,
+    creator: document.getElementById('vm-creator').value.trim() || '我的影片',
+    url,
+    duration: parseInt(document.getElementById('vm-duration').value) || 0,
+    tags: tags.length ? tags : ['full']
+  };
+  const { data, error } = await sb.from('custom_videos').insert(payload).select().single();
+  if (error) { toast('儲存失敗：' + error.message); return; }
+  const video = {
+    id: data.id, title: data.title, creator: data.creator,
+    url: data.url, duration: data.duration, tags: data.tags || []
+  };
+  state.videos.push(video);
+  // 自動加收藏
+  await sb.from('favorites').insert({ user_id: state.user.id, video_id: video.id });
+  state.favorites.push(video.id);
+  closeModal('video-modal');
+  toast('影片已收藏 ♥');
+  if (document.getElementById('workout-sub-library').style.display !== 'none') renderLibrary();
+  if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
 }
 
 // ========== Custom video modal ==========
@@ -2870,28 +3460,6 @@ function openVideoModal() {
   document.getElementById('vm-duration').value = '';
   document.querySelectorAll('#chips-vtag .chip').forEach(c => c.classList.remove('active'));
   openModal('video-modal');
-}
-
-function saveCustomVideo() {
-  const title = document.getElementById('vm-title').value.trim();
-  const url = document.getElementById('vm-url').value.trim();
-  if (!title || !url) { toast('標題和連結為必填'); return; }
-  const tags = Array.from(document.querySelectorAll('#chips-vtag .chip.active')).map(c => c.dataset.val);
-  const video = {
-    id: 'c' + Date.now(),
-    title,
-    creator: document.getElementById('vm-creator').value.trim() || '我的影片',
-    url,
-    duration: parseInt(document.getElementById('vm-duration').value) || 0,
-    tags: tags.length ? tags : ['full']
-  };
-  state.videos.push(video);
-  state.favorites.push(video.id); // 自動加入收藏
-  saveState();
-  closeModal('video-modal');
-  toast('影片已收藏 ♥');
-  if (document.getElementById('workout-sub-library').style.display !== 'none') renderLibrary();
-  if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
 }
 
 // ========================================
@@ -2919,7 +3487,7 @@ function handlePhotoUpload(e) {
   const reader = new FileReader();
   reader.onload = (evt) => {
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       // 壓縮：最長邊 1200px
       const maxDim = 1200;
       let w = img.width, h = img.height;
@@ -2928,34 +3496,73 @@ function handlePhotoUpload(e) {
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-      
-      const today = todayKey();
-      const todayRecord = state.records.find(r => r.date === today);
-      const angle = getChipValue('chips-angle');
-      const locked = getChipValue('chips-privacy') === 'locked';
-      
-      const photo = {
-        id: 'ph' + Date.now(),
-        angle,
-        dataUrl,
-        date: today,
-        weight: todayRecord?.weight || null,
-        fat: todayRecord?.fat || null,
-        menstrual: todayRecord?.menstrual || 'none',
-        note: document.getElementById('photo-note').value.trim(),
-        locked: locked && !!state.photoPassword
-      };
-      state.photos.push(photo);
-      saveState();
-      document.getElementById('photo-note').value = '';
-      e.target.value = '';
-      toast('照片已儲存 ✓');
-      renderRecentPhotos();
+
+      // 轉成 blob
+      canvas.toBlob(async (blob) => {
+        if (!blob) { toast('圖片處理失敗'); return; }
+        toast('上傳中...');
+
+        const today = todayKey();
+        const todayRecord = state.records.find(r => r.date === today);
+        const angle = getChipValue('chips-angle');
+        const locked = getChipValue('chips-privacy') === 'locked';
+        const filename = `${state.user.id}/${Date.now()}_${angle}.jpg`;
+
+        // 上傳到 storage
+        const { error: uploadError } = await sb.storage.from('photos').upload(filename, blob, {
+          contentType: 'image/jpeg',
+          upsert: false
+        });
+        if (uploadError) { toast('上傳失敗：' + uploadError.message); return; }
+
+        // 寫 metadata 到 photos table
+        const meta = {
+          user_id: state.user.id,
+          date: today,
+          angle,
+          storage_path: filename,
+          weight: todayRecord?.weight || null,
+          fat: todayRecord?.fat || null,
+          menstrual: todayRecord?.menstrual || 'none',
+          note: document.getElementById('photo-note').value.trim() || null,
+          locked: locked && !!state.photoPassword
+        };
+        const { data, error } = await sb.from('photos').insert(meta).select().single();
+        if (error) { toast('儲存失敗：' + error.message); return; }
+
+        // 取 signed url
+        const { data: urlData } = await sb.storage.from('photos').createSignedUrl(filename, 3600);
+
+        state.photos.unshift({
+          id: data.id, angle: data.angle, dataUrl: urlData?.signedUrl || '',
+          storage_path: data.storage_path,
+          date: data.date, weight: data.weight, fat: data.fat,
+          menstrual: data.menstrual, note: data.note, locked: data.locked
+        });
+
+        document.getElementById('photo-note').value = '';
+        e.target.value = '';
+        toast('照片已儲存 ✓');
+        renderRecentPhotos();
+      }, 'image/jpeg', 0.82);
     };
     img.src = evt.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+async function deleteCurrentPhoto() {
+  if (!state.currentPhotoId) return;
+  if (!confirm('確定刪除這張照片？無法復原')) return;
+  const photo = state.photos.find(p => p.id === state.currentPhotoId);
+  if (photo?.storage_path) {
+    await sb.storage.from('photos').remove([photo.storage_path]);
+  }
+  await sb.from('photos').delete().eq('id', state.currentPhotoId);
+  state.photos = state.photos.filter(p => p.id !== state.currentPhotoId);
+  closePhotoViewer();
+  toast('已刪除');
+  renderPhotosPage();
 }
 
 function renderRecentPhotos() {
@@ -3034,24 +3641,19 @@ function closePhotoViewer() {
   document.getElementById('photo-viewer').classList.remove('active');
   state.currentPhotoId = null;
 }
-function deleteCurrentPhoto() {
-  if (!state.currentPhotoId) return;
-  if (!confirm('確定刪除這張照片？無法復原')) return;
-  state.photos = state.photos.filter(p => p.id !== state.currentPhotoId);
-  saveState();
-  closePhotoViewer();
-  toast('已刪除');
-  renderPhotosPage();
-}
 
 // Photo password
-function setPhotoPassword() {
+async function setPhotoPassword() {
   if (state.photoPassword) {
     if (confirm('已設定密碼。要移除密碼嗎？')) {
       state.photoPassword = null;
       state.photoUnlocked = false;
-      // 把所有照片改成 unlocked
+      // 把所有照片改成 unlocked（本機 + 雲端）
+      const lockedIds = state.photos.filter(p => p.locked).map(p => p.id);
       state.photos.forEach(p => p.locked = false);
+      if (lockedIds.length) {
+        await sb.from('photos').update({ locked: false }).in('id', lockedIds);
+      }
       saveState();
       toast('密碼已移除');
       renderMe();
@@ -3324,28 +3926,46 @@ function showImportPreview(data, headers, mapping, skipped) {
   }).join('');
 }
 
-function confirmImport() {
+async function confirmImport() {
   if (!state.importData) return;
-  let added = 0, updated = 0;
-  state.importData.forEach(rec => {
-    const idx = state.records.findIndex(r => r.date === rec.date);
-    if (idx >= 0) {
-      state.records[idx] = { ...state.records[idx], ...rec };
+  let added = 0, updated = 0, failed = 0;
+  toast('匯入中...');
+
+  // 批次處理，每筆 upsert
+  for (const rec of state.importData) {
+    const payload = {
+      user_id: state.user.id,
+      date: rec.date,
+      height: state.user.height
+    };
+    // 帶入有值的欄位
+    ['weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh',
+     'left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress','note'].forEach(k => {
+      if (rec[k] !== undefined && rec[k] !== null) payload[k] = rec[k];
+    });
+    const existing = state.records.find(r => r.date === rec.date);
+    const { data, error } = await sb.from('body_records')
+      .upsert(payload, { onConflict: 'user_id,date' })
+      .select()
+      .single();
+    if (error) {
+      failed++;
+      continue;
+    }
+    if (existing) {
+      const idx = state.records.findIndex(r => r.date === rec.date);
+      state.records[idx] = data;
       updated++;
     } else {
-      // 補上預設值
-      const full = {
-        sleep: 7, fatigue: 5, stress: 5, menstrual: 'none', mood: 'okay',
-        createdAt: new Date().toISOString(),
-        ...rec
-      };
-      state.records.push(full);
+      state.records.push(data);
       added++;
     }
-  });
-  saveState();
+  }
+
+  // 重新排序
+  state.records.sort((a,b) => a.date.localeCompare(b.date));
   closeModal('import-modal');
-  toast(`匯入完成：新增 ${added}、更新 ${updated}`);
+  toast(`匯入完成：新增 ${added}、更新 ${updated}${failed ? '、失敗 ' + failed : ''}`);
   renderAll();
 }
 
@@ -3518,6 +4138,109 @@ ${JSON.stringify(recentLogs, null, 2)}`;
     saveState();
     renderAIMessages();
   }
+}
+
+// ========================================
+// ========== MANAGE RECORDS (編輯/刪除) ==========
+// ========================================
+function openManageRecords() {
+  document.getElementById('manage-search').value = '';
+  renderManageList();
+  openModal('manage-modal');
+}
+
+function renderManageList() {
+  const q = document.getElementById('manage-search').value.trim().toLowerCase();
+  let records = [...state.records].sort((a,b) => b.date.localeCompare(a.date));
+  if (q) records = records.filter(r => r.date.includes(q));
+  const list = document.getElementById('manage-list');
+  if (records.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-emoji">📭</div><div class="empty-text">沒有紀錄</div></div>';
+    return;
+  }
+  list.innerHTML = records.map(r => {
+    const parts = [];
+    if (r.weight) parts.push(`${r.weight}kg`);
+    if (r.fat) parts.push(`體脂 ${r.fat}%`);
+    if (r.bmi) parts.push(`BMI ${r.bmi}`);
+    if (r.waist) parts.push(`腰 ${r.waist}`);
+    return `
+      <div class="manage-item">
+        <div class="manage-item-left" onclick="openEditRecord('${r.id}')">
+          <div class="manage-date">${r.date}</div>
+          <div class="manage-meta">${parts.join(' · ') || '只有狀態紀錄'}</div>
+        </div>
+        <div class="manage-actions">
+          <button class="icon-btn edit" onclick="openEditRecord('${r.id}')" title="編輯">✎</button>
+          <button class="icon-btn danger" onclick="deleteRecord('${r.id}')" title="刪除">×</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openEditRecord(id) {
+  const r = state.records.find(x => x.id === id);
+  if (!r) return;
+  state.editingRecordId = id;
+  document.getElementById('edit-modal-sub').textContent = `編輯 ${r.date} 的紀錄`;
+  document.getElementById('edit-date').value = r.date;
+  ['weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh',
+   'left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress'].forEach(f => {
+    const el = document.getElementById('edit-' + f);
+    if (el) el.value = r[f] ?? '';
+  });
+  document.getElementById('edit-note').value = r.note || '';
+  closeModal('manage-modal');
+  openModal('edit-modal');
+}
+
+async function saveEditedRecord() {
+  if (!state.editingRecordId) return;
+  const patch = {
+    date: document.getElementById('edit-date').value
+  };
+  ['weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh',
+   'left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress'].forEach(f => {
+    const el = document.getElementById('edit-' + f);
+    const v = parseFloat(el.value);
+    patch[f] = isNaN(v) ? null : v;
+  });
+  patch.note = document.getElementById('edit-note').value.trim() || null;
+
+  // 重算 BMI（如果體重變了沒填 BMI）
+  if (patch.weight && !patch.bmi && state.user.height) {
+    patch.bmi = +(patch.weight / Math.pow(state.user.height/100, 2)).toFixed(1);
+  }
+
+  const { data, error } = await sb.from('body_records')
+    .update(patch)
+    .eq('id', state.editingRecordId)
+    .select()
+    .single();
+
+  if (error) { toast('儲存失敗：' + error.message); return; }
+
+  const idx = state.records.findIndex(r => r.id === state.editingRecordId);
+  if (idx >= 0) state.records[idx] = data;
+  state.records.sort((a,b) => a.date.localeCompare(b.date));
+  closeModal('edit-modal');
+  state.editingRecordId = null;
+  toast('已更新 ✓');
+  renderAll();
+  openManageRecords();
+}
+
+async function deleteRecord(id) {
+  const r = state.records.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`確定刪除 ${r.date} 的紀錄嗎？`)) return;
+  const { error } = await sb.from('body_records').delete().eq('id', id);
+  if (error) { toast('刪除失敗：' + error.message); return; }
+  state.records = state.records.filter(x => x.id !== id);
+  toast('已刪除');
+  renderManageList();
+  renderAll();
 }
 
 // ========================================
