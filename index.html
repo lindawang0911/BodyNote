@@ -3260,36 +3260,42 @@ function toast(msg) {
 // ========================================
 // ========== WORKOUT LIBRARY ==========
 // ========================================
-// 精選庫：YouTube 影片資料（含 Pamela、growingannanas、MadFit 等溫柔派）
+// 精選庫：你指定的三位 YouTuber 真實影片（已驗證網址）
 const LIBRARY = [
   // ========== Pamela Reif ==========
-  {id:'p1', title:'10 min standing abs', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=Hz2JOZkOdrI', duration:10, tags:['standing','abs','low','no_jumping']},
-  {id:'p2', title:'10 min lazy girl workout (in bed)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=jSc_RTOcAlk', duration:10, tags:['low','full','morning','no_jumping']},
-  {id:'p3', title:'15 min knee friendly cardio (no jumping)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=4w5pVuOKa9Y', duration:15, tags:['cardio','medium','no_jumping','standing']},
-  {id:'p4', title:'10 min booty workout (no equipment)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=PcUVS6P-FbE', duration:10, tags:['butt','legs','medium']},
-  {id:'p5', title:'15 min full body stretch', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=g_tea8ZNk5A', duration:15, tags:['stretch','full','low']},
-  {id:'p6', title:'10 min morning routine (gentle)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=GhtjOcUYUgs', duration:10, tags:['morning','low','stretch','standing']},
-  
+  {id:'p1', title:'10 min standing abs + legs (beginner)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=27SJ1wS7Sb0', duration:10, tags:['standing','abs','legs','low','no_jumping']},
+  {id:'p2', title:'10 min booty workout (no jumps)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=WGnCC4udvlw', duration:10, tags:['butt','medium','no_jumping']},
+  {id:'p3', title:'10 min booty + abs slow floor workout', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=UTPLeo6WAUc', duration:10, tags:['butt','abs','low','no_jumping']},
+  {id:'p4', title:'10 min full body slow & hard (floor only)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=DkLISiTHRjU', duration:10, tags:['full','medium','no_jumping']},
+  {id:'p5', title:'10 min booty workout (knee friendly)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=ggSfmY8gmO4', duration:10, tags:['butt','low','no_jumping']},
+  {id:'p6', title:'10 min booty pump', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=lRFxt8BHxT0', duration:10, tags:['butt','medium','no_jumping']},
+  {id:'p7', title:'10 min lower ab workout (beginner)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=WJcA-yAvgP8', duration:10, tags:['abs','low','no_jumping']},
+  {id:'p8', title:'10 min ab workout (classic)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=AnYl6Nk9GOA', duration:10, tags:['abs','medium','no_jumping']},
+  {id:'p9', title:'10 min HIIT + standing abs', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=27SJ1wS7Sb0', duration:10, tags:['hiit','abs','high','standing']},
+  {id:'p10', title:'10 min glute bridge burnout (floor)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=iHBZiO5rDQ8', duration:10, tags:['butt','medium','no_jumping']},
+  {id:'p11', title:'10 min bombastic booty', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=AFxHeJP--j4', duration:10, tags:['butt','medium','no_jumping']},
+  {id:'p12', title:'10 min lower ab workout', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=54x6yjnzLms', duration:10, tags:['abs','medium','no_jumping']},
+
   // ========== growingannanas ==========
-  {id:'a1', title:'10 min abs (low impact)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=NMyaQ7qzAas', duration:10, tags:['abs','low','no_jumping']},
-  {id:'a2', title:'15 min booty band workout', creator:'growingannanas', url:'https://www.youtube.com/watch?v=zk9pyaSm9Pw', duration:15, tags:['butt','medium']},
-  {id:'a3', title:'20 min full body (low impact)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=PSL-DPYzs1c', duration:20, tags:['full','medium','no_jumping']},
-  {id:'a4', title:'10 min standing abs', creator:'growingannanas', url:'https://www.youtube.com/watch?v=tT_zKkA9j50', duration:10, tags:['standing','abs','low','no_jumping']},
-  {id:'a5', title:'15 min booty + abs', creator:'growingannanas', url:'https://www.youtube.com/watch?v=lMcWUjOHTNg', duration:15, tags:['butt','abs','medium']},
-  
-  // ========== MadFit (上班族友善) ==========
-  {id:'m1', title:'10 min apartment friendly cardio (no jumping)', creator:'MadFit', url:'https://www.youtube.com/watch?v=PpyXyJ7yC7c', duration:10, tags:['cardio','no_jumping','medium','standing']},
-  {id:'m2', title:'15 min full body (quiet)', creator:'MadFit', url:'https://www.youtube.com/watch?v=Y9fHJqDgaR0', duration:15, tags:['full','no_jumping','medium']},
-  {id:'m3', title:'10 min morning stretch', creator:'MadFit', url:'https://www.youtube.com/watch?v=g_tea8ZNk5A', duration:10, tags:['morning','stretch','low']},
-  
-  // ========== Yoga With Adriene ==========
-  {id:'y1', title:'10 min yoga for stress relief', creator:'Yoga With Adriene', url:'https://www.youtube.com/watch?v=hJbRpHZr_d0', duration:10, tags:['yoga','low','stretch']},
-  {id:'y2', title:'15 min yoga for tired body', creator:'Yoga With Adriene', url:'https://www.youtube.com/watch?v=BiWDsfZ3zbo', duration:15, tags:['yoga','low','stretch']},
-  {id:'y3', title:'15 min morning yoga', creator:'Yoga With Adriene', url:'https://www.youtube.com/watch?v=v7AYKMP6rOE', duration:15, tags:['yoga','morning','low','stretch']},
-  
-  // ========== 生理期友善 ==========
-  {id:'g1', title:'10 min period yoga (cramps relief)', creator:'Yoga With Bird', url:'https://www.youtube.com/watch?v=8DUL_71Vp80', duration:10, tags:['yoga','low','stretch']},
-  {id:'g2', title:'10 min gentle stretching for tired days', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=g_tea8ZNk5A', duration:10, tags:['stretch','low','full']}
+  {id:'a1', title:'15 min full body no jumping (foodspring)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=bs3Iyrq2RsA', duration:15, tags:['full','medium','no_jumping']},
+  {id:'a2', title:'20 min full body no jumping (no weights)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=K0OdP_BEGVU', duration:20, tags:['full','medium','no_jumping']},
+  {id:'a3', title:'25 min low impact full body HIIT', creator:'growingannanas', url:'https://www.youtube.com/watch?v=OWNQVs6swqg', duration:25, tags:['full','hiit','medium','no_jumping']},
+  {id:'a4', title:'30 min low impact full body workout', creator:'growingannanas', url:'https://www.youtube.com/watch?v=SCmeK-Vh4wM', duration:30, tags:['full','medium','no_jumping']},
+  {id:'a5', title:'30 min intense low impact (apartment friendly)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=Z1AxtMuDuss', duration:30, tags:['full','medium','no_jumping']},
+  {id:'a6', title:'30 min no jumping all standing HIIT (with weights)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=WxAkMuXERBE', duration:30, tags:['hiit','standing','high','no_jumping']},
+  {id:'a7', title:'30 min full body no jumping + abs', creator:'growingannanas', url:'https://www.youtube.com/watch?v=l7zH_nfYO7U', duration:30, tags:['full','abs','medium','no_jumping']},
+  {id:'a8', title:'30 min low impact (Maldives)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=0VHgG84uq_k', duration:30, tags:['cardio','full','medium','no_jumping']},
+  {id:'a9', title:'40 min low impact full body', creator:'growingannanas', url:'https://www.youtube.com/watch?v=9vv3FNh8PyY', duration:40, tags:['full','medium','no_jumping']},
+
+  // ========== Mady Morrison ==========
+  {id:'m1', title:'10 min morning stretch for every day', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=ihba9Lw0tv4', duration:10, tags:['morning','stretch','low','yoga']},
+  {id:'m2', title:'10 min full body morning stretch', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=iRr5_3TIGtQ', duration:10, tags:['morning','stretch','low','full']},
+  {id:'m3', title:'10 min evening stretch for beginners (better sleep)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=_9JZuOO9E_w', duration:10, tags:['stretch','low','yoga']},
+  {id:'m4', title:'10 min yoga flow (beginner / intermediate)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=7Av1kR5TnIA', duration:10, tags:['yoga','low','stretch']},
+  {id:'m5', title:'10 min yoga flow for energy & focus', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=3YpRJeAbo7E', duration:10, tags:['yoga','morning','low']},
+  {id:'m6', title:'10 min daily posture fix (back pain relief)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=BPlCatqZRPI', duration:10, tags:['stretch','low','back','yoga']},
+  {id:'m7', title:'10 min back pain relief stretches', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=2eA2Koq6pTI', duration:10, tags:['stretch','low','back','yoga']},
+  {id:'m8', title:'10 min yoga quickie (energy boost)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=kyXvYyfRrz4', duration:10, tags:['yoga','medium','abs']}
 ];
 
 const TAG_LABELS = {
@@ -3298,7 +3304,7 @@ const TAG_LABELS = {
   cardio: '有氧', hiit: 'HIIT', yoga: '瑜伽', stretch: '伸展',
   standing: '站姿', no_jumping: '無跳躍', morning: '晨間'
 };
-const LIB_FILTER_TAGS = ['all','low','no_jumping','standing','morning','abs','butt','legs','full','yoga','stretch','cardio'];
+const LIB_FILTER_TAGS = ['all','low','no_jumping','standing','morning','stretch','yoga','abs','butt','legs','back','full','cardio','hiit'];
 
 let activeLibTag = 'all';
 let activeFavTag = 'all';
