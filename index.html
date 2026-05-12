@@ -1128,18 +1128,18 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 8px;
 }
 .video-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  align-self: flex-start;
 }
 .video-icon-btn {
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   background: var(--bg-soft);
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink-soft);
   display: flex;
   align-items: center;
@@ -1715,6 +1715,10 @@ input[type="range"]::-moz-range-thumb {
 
   <!-- Library -->
   <div id="workout-sub-library" style="display:none;">
+    <div style="font-size: 12px; color: var(--ink-mute); margin-bottom: 12px; line-height: 1.6;">
+      所有影片都儲存在你的雲端，可以 ♡ 收藏、✎ 編輯或 × 刪除。<br>
+      想加新的影片？按右下角 + 按鈕。
+    </div>
     <div class="library-tag-row" id="lib-tag-row"></div>
     <div id="lib-list"></div>
   </div>
@@ -2054,22 +2058,30 @@ input[type="range"]::-moz-range-thumb {
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title">收藏新影片</div>
-    <div class="modal-sub">加入你喜歡的運動影片</div>
+    <div class="modal-sub">貼上 YouTube 連結，自動抓影片資訊</div>
+    <div class="form-group">
+      <label class="form-label">YouTube 連結</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" class="form-input" id="vm-url" placeholder="https://www.youtube.com/..." style="flex:1;" oninput="onVideoUrlChange()">
+        <button class="btn btn-soft" id="vm-fetch-btn" onclick="fetchVideoInfo()" style="flex: 0 0 auto; padding: 0 16px;">抓資訊</button>
+      </div>
+      <div id="vm-fetch-status" style="font-size: 11px; color: var(--ink-mute); margin-top: 6px; min-height: 14px;"></div>
+    </div>
+    <div id="vm-preview" style="display:none; background: var(--bg-soft); border-radius: 12px; padding: 10px; margin-bottom: 16px; display:flex; gap: 10px; align-items: center;">
+      <img id="vm-thumb" style="width: 80px; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; flex-shrink: 0;">
+      <div style="font-size: 11px; color: var(--ink-soft);">縮圖預覽</div>
+    </div>
     <div class="form-group">
       <label class="form-label">影片標題</label>
-      <input type="text" class="form-input" id="vm-title" placeholder="例如：15 min full body">
+      <input type="text" class="form-input" id="vm-title" placeholder="貼網址後會自動填入">
     </div>
     <div class="form-group">
       <label class="form-label">創作者</label>
-      <input type="text" class="form-input" id="vm-creator" placeholder="Pamela Reif">
-    </div>
-    <div class="form-group">
-      <label class="form-label">YouTube 連結</label>
-      <input type="text" class="form-input" id="vm-url" placeholder="https://www.youtube.com/...">
+      <input type="text" class="form-input" id="vm-creator" placeholder="例如 Pamela Reif">
     </div>
     <div class="form-group">
       <label class="form-label">時長（分鐘）</label>
-      <input type="number" class="form-input" id="vm-duration" placeholder="15">
+      <input type="number" class="form-input" id="vm-duration" placeholder="會從標題自動猜">
     </div>
     <div class="form-group">
       <label class="form-label">標籤（可多選）</label>
@@ -2508,6 +2520,9 @@ async function loadUserData(authUser) {
     url: v.url, duration: v.duration, tags: v.tags || []
   }));
 
+  // 第一次使用：匯入預設影片到雲端
+  await ensureDefaultVideos();
+
   // photos (metadata only, dataUrl 由 storage 取)
   const { data: photos } = await sb.from('photos').select('*').eq('user_id', authUser.id).order('date', { ascending: false });
   state.photos = await Promise.all((photos || []).map(async p => {
@@ -2571,6 +2586,40 @@ function saveState() { saveLocalCache(); }
 // 離線時的待同步佇列（暫時簡單實作：直接 toast 提示）
 async function syncPending() {
   // 未來可以加離線佇列
+}
+
+// 第一次登入：匯入預設影片到使用者的 Supabase（用 localStorage 標記避免重複）
+async function ensureDefaultVideos() {
+  if (!state.user) return;
+  const flagKey = `bodynote_defaults_imported_${state.user.id}`;
+  if (localStorage.getItem(flagKey)) return; // 已匯入過
+  // 若雲端已經有影片（例如使用者匯出後在別處重新登入），也不重複匯入
+  if (state.videos.length > 0) {
+    localStorage.setItem(flagKey, '1');
+    return;
+  }
+  try {
+    const payload = DEFAULT_VIDEOS.map(v => ({
+      user_id: state.user.id,
+      title: v.title,
+      creator: v.creator,
+      url: v.url,
+      duration: v.duration,
+      tags: v.tags
+    }));
+    const { data, error } = await sb.from('custom_videos').insert(payload).select();
+    if (error) {
+      console.warn('預設影片匯入失敗：', error);
+      return;
+    }
+    state.videos = (data || []).map(v => ({
+      id: v.id, title: v.title, creator: v.creator,
+      url: v.url, duration: v.duration, tags: v.tags || []
+    }));
+    localStorage.setItem(flagKey, '1');
+  } catch(e) {
+    console.warn(e);
+  }
 }
 
 function updateDate() {
@@ -3260,43 +3309,46 @@ function toast(msg) {
 // ========================================
 // ========== WORKOUT LIBRARY ==========
 // ========================================
-// 精選庫：你指定的三位 YouTuber 真實影片（已驗證網址）
-const LIBRARY = [
+// 預設影片清單（只在第一次登入時匯入到使用者的 Supabase）
+const DEFAULT_VIDEOS = [
   // ========== Pamela Reif ==========
-  {id:'p1', title:'10 min standing abs + legs (beginner)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=27SJ1wS7Sb0', duration:10, tags:['standing','abs','legs','low','no_jumping']},
-  {id:'p2', title:'10 min booty workout (no jumps)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=WGnCC4udvlw', duration:10, tags:['butt','medium','no_jumping']},
-  {id:'p3', title:'10 min booty + abs slow floor workout', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=UTPLeo6WAUc', duration:10, tags:['butt','abs','low','no_jumping']},
-  {id:'p4', title:'10 min full body slow & hard (floor only)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=DkLISiTHRjU', duration:10, tags:['full','medium','no_jumping']},
-  {id:'p5', title:'10 min booty workout (knee friendly)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=ggSfmY8gmO4', duration:10, tags:['butt','low','no_jumping']},
-  {id:'p6', title:'10 min booty pump', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=lRFxt8BHxT0', duration:10, tags:['butt','medium','no_jumping']},
-  {id:'p7', title:'10 min lower ab workout (beginner)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=WJcA-yAvgP8', duration:10, tags:['abs','low','no_jumping']},
-  {id:'p8', title:'10 min ab workout (classic)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=AnYl6Nk9GOA', duration:10, tags:['abs','medium','no_jumping']},
-  {id:'p9', title:'10 min HIIT + standing abs', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=27SJ1wS7Sb0', duration:10, tags:['hiit','abs','high','standing']},
-  {id:'p10', title:'10 min glute bridge burnout (floor)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=iHBZiO5rDQ8', duration:10, tags:['butt','medium','no_jumping']},
-  {id:'p11', title:'10 min bombastic booty', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=AFxHeJP--j4', duration:10, tags:['butt','medium','no_jumping']},
-  {id:'p12', title:'10 min lower ab workout', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=54x6yjnzLms', duration:10, tags:['abs','medium','no_jumping']},
+  {title:'10 min standing abs + legs (beginner)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=27SJ1wS7Sb0', duration:10, tags:['standing','abs','legs','low','no_jumping']},
+  {title:'10 min booty workout (no jumps)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=WGnCC4udvlw', duration:10, tags:['butt','medium','no_jumping']},
+  {title:'10 min booty + abs slow floor workout', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=UTPLeo6WAUc', duration:10, tags:['butt','abs','low','no_jumping']},
+  {title:'10 min full body slow & hard (floor only)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=DkLISiTHRjU', duration:10, tags:['full','medium','no_jumping']},
+  {title:'10 min booty workout (knee friendly)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=ggSfmY8gmO4', duration:10, tags:['butt','low','no_jumping']},
+  {title:'10 min booty pump', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=lRFxt8BHxT0', duration:10, tags:['butt','medium','no_jumping']},
+  {title:'10 min lower ab workout (beginner)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=WJcA-yAvgP8', duration:10, tags:['abs','low','no_jumping']},
+  {title:'10 min ab workout (classic)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=AnYl6Nk9GOA', duration:10, tags:['abs','medium','no_jumping']},
+  {title:'10 min HIIT + standing abs', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=27SJ1wS7Sb0', duration:10, tags:['hiit','abs','high','standing']},
+  {title:'10 min glute bridge burnout (floor)', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=iHBZiO5rDQ8', duration:10, tags:['butt','medium','no_jumping']},
+  {title:'10 min bombastic booty', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=AFxHeJP--j4', duration:10, tags:['butt','medium','no_jumping']},
+  {title:'10 min lower ab workout', creator:'Pamela Reif', url:'https://www.youtube.com/watch?v=54x6yjnzLms', duration:10, tags:['abs','medium','no_jumping']},
 
   // ========== growingannanas ==========
-  {id:'a1', title:'15 min full body no jumping (foodspring)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=bs3Iyrq2RsA', duration:15, tags:['full','medium','no_jumping']},
-  {id:'a2', title:'20 min full body no jumping (no weights)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=K0OdP_BEGVU', duration:20, tags:['full','medium','no_jumping']},
-  {id:'a3', title:'25 min low impact full body HIIT', creator:'growingannanas', url:'https://www.youtube.com/watch?v=OWNQVs6swqg', duration:25, tags:['full','hiit','medium','no_jumping']},
-  {id:'a4', title:'30 min low impact full body workout', creator:'growingannanas', url:'https://www.youtube.com/watch?v=SCmeK-Vh4wM', duration:30, tags:['full','medium','no_jumping']},
-  {id:'a5', title:'30 min intense low impact (apartment friendly)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=Z1AxtMuDuss', duration:30, tags:['full','medium','no_jumping']},
-  {id:'a6', title:'30 min no jumping all standing HIIT (with weights)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=WxAkMuXERBE', duration:30, tags:['hiit','standing','high','no_jumping']},
-  {id:'a7', title:'30 min full body no jumping + abs', creator:'growingannanas', url:'https://www.youtube.com/watch?v=l7zH_nfYO7U', duration:30, tags:['full','abs','medium','no_jumping']},
-  {id:'a8', title:'30 min low impact (Maldives)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=0VHgG84uq_k', duration:30, tags:['cardio','full','medium','no_jumping']},
-  {id:'a9', title:'40 min low impact full body', creator:'growingannanas', url:'https://www.youtube.com/watch?v=9vv3FNh8PyY', duration:40, tags:['full','medium','no_jumping']},
+  {title:'15 min full body no jumping', creator:'growingannanas', url:'https://www.youtube.com/watch?v=bs3Iyrq2RsA', duration:15, tags:['full','medium','no_jumping']},
+  {title:'20 min full body no jumping (no weights)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=K0OdP_BEGVU', duration:20, tags:['full','medium','no_jumping']},
+  {title:'25 min low impact full body HIIT', creator:'growingannanas', url:'https://www.youtube.com/watch?v=OWNQVs6swqg', duration:25, tags:['full','hiit','medium','no_jumping']},
+  {title:'30 min low impact full body workout', creator:'growingannanas', url:'https://www.youtube.com/watch?v=SCmeK-Vh4wM', duration:30, tags:['full','medium','no_jumping']},
+  {title:'30 min intense low impact (apartment friendly)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=Z1AxtMuDuss', duration:30, tags:['full','medium','no_jumping']},
+  {title:'30 min no jumping all standing HIIT (with weights)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=WxAkMuXERBE', duration:30, tags:['hiit','standing','high','no_jumping']},
+  {title:'30 min full body no jumping + abs', creator:'growingannanas', url:'https://www.youtube.com/watch?v=l7zH_nfYO7U', duration:30, tags:['full','abs','medium','no_jumping']},
+  {title:'30 min low impact (Maldives)', creator:'growingannanas', url:'https://www.youtube.com/watch?v=0VHgG84uq_k', duration:30, tags:['cardio','full','medium','no_jumping']},
+  {title:'40 min low impact full body', creator:'growingannanas', url:'https://www.youtube.com/watch?v=9vv3FNh8PyY', duration:40, tags:['full','medium','no_jumping']},
 
   // ========== Mady Morrison ==========
-  {id:'m1', title:'10 min morning stretch for every day', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=ihba9Lw0tv4', duration:10, tags:['morning','stretch','low','yoga']},
-  {id:'m2', title:'10 min full body morning stretch', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=iRr5_3TIGtQ', duration:10, tags:['morning','stretch','low','full']},
-  {id:'m3', title:'10 min evening stretch for beginners (better sleep)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=_9JZuOO9E_w', duration:10, tags:['stretch','low','yoga']},
-  {id:'m4', title:'10 min yoga flow (beginner / intermediate)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=7Av1kR5TnIA', duration:10, tags:['yoga','low','stretch']},
-  {id:'m5', title:'10 min yoga flow for energy & focus', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=3YpRJeAbo7E', duration:10, tags:['yoga','morning','low']},
-  {id:'m6', title:'10 min daily posture fix (back pain relief)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=BPlCatqZRPI', duration:10, tags:['stretch','low','back','yoga']},
-  {id:'m7', title:'10 min back pain relief stretches', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=2eA2Koq6pTI', duration:10, tags:['stretch','low','back','yoga']},
-  {id:'m8', title:'10 min yoga quickie (energy boost)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=kyXvYyfRrz4', duration:10, tags:['yoga','medium','abs']}
+  {title:'10 min morning stretch for every day', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=ihba9Lw0tv4', duration:10, tags:['morning','stretch','low','yoga']},
+  {title:'10 min full body morning stretch', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=iRr5_3TIGtQ', duration:10, tags:['morning','stretch','low','full']},
+  {title:'10 min evening stretch (better sleep)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=_9JZuOO9E_w', duration:10, tags:['stretch','low','yoga']},
+  {title:'10 min yoga flow (beginner / intermediate)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=7Av1kR5TnIA', duration:10, tags:['yoga','low','stretch']},
+  {title:'10 min yoga flow for energy & focus', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=3YpRJeAbo7E', duration:10, tags:['yoga','morning','low']},
+  {title:'10 min daily posture fix (back pain relief)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=BPlCatqZRPI', duration:10, tags:['stretch','low','back','yoga']},
+  {title:'10 min back pain relief stretches', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=2eA2Koq6pTI', duration:10, tags:['stretch','low','back','yoga']},
+  {title:'10 min yoga quickie (energy boost)', creator:'Mady Morrison', url:'https://www.youtube.com/watch?v=kyXvYyfRrz4', duration:10, tags:['yoga','medium','abs']}
 ];
+
+// LIBRARY 改成空陣列，現在所有影片都從 Supabase 來
+const LIBRARY = [];
 
 const TAG_LABELS = {
   all: '全部', low: '低強度', medium: '中強度', high: '高強度',
@@ -3325,7 +3377,7 @@ function renderLibrary() {
     `<div class="library-tag ${t === activeLibTag ? 'active' : ''}" onclick="setLibTag('${t}')">${TAG_LABELS[t]}</div>`
   ).join('');
   // videos
-  const allVideos = [...LIBRARY, ...state.videos];
+  const allVideos = state.videos;
   const filtered = activeLibTag === 'all' ? allVideos : allVideos.filter(v => v.tags.includes(activeLibTag));
   document.getElementById('lib-list').innerHTML = filtered.map(v => renderVideoCard(v)).join('') || 
     '<div class="empty"><div class="empty-emoji">◯</div><div class="empty-text">此分類沒有影片</div></div>';
@@ -3335,7 +3387,7 @@ function setLibTag(t) { activeLibTag = t; renderLibrary(); }
 function setFavTag(t) { activeFavTag = t; renderFavorites(); }
 
 function renderFavorites() {
-  const allVideos = [...LIBRARY, ...state.videos];
+  const allVideos = state.videos;
   const favs = state.favorites.map(id => allVideos.find(v => v.id === id)).filter(Boolean);
   // 收集所有 tag
   const usedTags = new Set(['all']);
@@ -3366,16 +3418,18 @@ function renderVideoCard(v, isFav) {
     <div class="video-card">
       <div class="video-thumb" style="${thumb ? `background-image: url('${thumb}')` : ''}" onclick="window.open('${v.url}','_blank')"></div>
       <div class="video-info" onclick="window.open('${v.url}','_blank')">
-        <div class="video-title">${v.title}</div>
-        <div class="video-creator">${v.creator}</div>
+        <div class="video-title">${escapeHtml(v.title)}</div>
+        <div class="video-creator">${escapeHtml(v.creator || '')}</div>
         <div class="video-meta">
           <span class="video-tag">${v.duration} 分</span>
           ${tagStr}
         </div>
       </div>
       <div class="video-actions">
-        <button class="video-icon-btn ${isFavorite ? 'fav' : ''}" onclick="event.stopPropagation(); toggleFav('${v.id}')">${isFavorite ? '♥' : '♡'}</button>
+        <button class="video-icon-btn ${isFavorite ? 'fav' : ''}" onclick="event.stopPropagation(); toggleFav('${v.id}')" title="${isFavorite ? '取消收藏' : '加入收藏'}">${isFavorite ? '♥' : '♡'}</button>
         <button class="video-icon-btn" onclick="event.stopPropagation(); assignVideoToDay('${v.id}')" title="排入運動">＋</button>
+        <button class="video-icon-btn" onclick="event.stopPropagation(); openEditVideoModal('${v.id}')" title="編輯">✎</button>
+        <button class="video-icon-btn" onclick="event.stopPropagation(); deleteVideo('${v.id}')" title="刪除" style="color: #B07878; background: var(--rose-soft);">×</button>
       </div>
     </div>
   `;
@@ -3398,8 +3452,85 @@ async function toggleFav(id) {
   if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
 }
 
+async function deleteVideo(id) {
+  const v = state.videos.find(x => x.id === id);
+  if (!v) return;
+  if (!confirm(`確定刪除「${v.title}」嗎？\n（會從精選庫和收藏一起移除）`)) return;
+  // 先刪 favorites（如果有的話）
+  await sb.from('favorites').delete().eq('user_id', state.user.id).eq('video_id', id);
+  // 再刪 video
+  const { error } = await sb.from('custom_videos').delete().eq('id', id);
+  if (error) { toast('刪除失敗：' + error.message); return; }
+  state.videos = state.videos.filter(x => x.id !== id);
+  state.favorites = state.favorites.filter(x => x !== id);
+  toast('已刪除');
+  renderLibrary();
+  if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
+}
+
+let editingVideoId = null;
+function openEditVideoModal(id) {
+  const v = state.videos.find(x => x.id === id);
+  if (!v) return;
+  editingVideoId = id;
+  document.getElementById('vm-url').value = v.url;
+  document.getElementById('vm-title').value = v.title;
+  document.getElementById('vm-creator').value = v.creator || '';
+  document.getElementById('vm-duration').value = v.duration || '';
+  document.getElementById('vm-fetch-status').textContent = '';
+  // 顯示縮圖
+  const ytId = extractYoutubeId(v.url);
+  if (ytId) {
+    document.getElementById('vm-thumb').src = `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
+    document.getElementById('vm-preview').style.display = 'flex';
+  } else {
+    document.getElementById('vm-preview').style.display = 'none';
+  }
+  // 設定標籤
+  document.querySelectorAll('#chips-vtag .chip').forEach(c => {
+    c.classList.toggle('active', (v.tags || []).includes(c.dataset.val));
+  });
+  // 改 modal 標題
+  document.querySelector('#video-modal .modal-title').textContent = '編輯影片';
+  document.querySelector('#video-modal .modal-sub').textContent = '修改資訊或更新分類';
+  // 改儲存按鈕的事件
+  const saveBtn = document.querySelector('#video-modal .btn-primary');
+  saveBtn.textContent = '更新';
+  saveBtn.setAttribute('onclick', 'saveEditedVideo()');
+  openModal('video-modal');
+}
+
+async function saveEditedVideo() {
+  if (!editingVideoId) return;
+  const title = document.getElementById('vm-title').value.trim();
+  const url = document.getElementById('vm-url').value.trim();
+  if (!title || !url) { toast('標題和連結為必填'); return; }
+  const tags = Array.from(document.querySelectorAll('#chips-vtag .chip.active')).map(c => c.dataset.val);
+  const patch = {
+    title,
+    creator: document.getElementById('vm-creator').value.trim() || '我的影片',
+    url,
+    duration: parseInt(document.getElementById('vm-duration').value) || 0,
+    tags: tags.length ? tags : ['full']
+  };
+  const { data, error } = await sb.from('custom_videos').update(patch).eq('id', editingVideoId).select().single();
+  if (error) { toast('更新失敗：' + error.message); return; }
+  const idx = state.videos.findIndex(v => v.id === editingVideoId);
+  if (idx >= 0) {
+    state.videos[idx] = {
+      id: data.id, title: data.title, creator: data.creator,
+      url: data.url, duration: data.duration, tags: data.tags || []
+    };
+  }
+  editingVideoId = null;
+  closeModal('video-modal');
+  toast('已更新 ✓');
+  renderLibrary();
+  if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
+}
+
 async function assignVideoToDay(videoId) {
-  const allVideos = [...LIBRARY, ...state.videos];
+  const allVideos = state.videos;
   const v = allVideos.find(x => x.id === videoId);
   if (!v) return;
   const day = prompt('排入哪一天？輸入 1-7（1=週一，7=週日）');
@@ -3449,23 +3580,182 @@ async function saveCustomVideo() {
     url: data.url, duration: data.duration, tags: data.tags || []
   };
   state.videos.push(video);
-  // 自動加收藏
-  await sb.from('favorites').insert({ user_id: state.user.id, video_id: video.id });
-  state.favorites.push(video.id);
   closeModal('video-modal');
-  toast('影片已收藏 ♥');
+  toast('影片已加入精選庫 ✓');
   if (document.getElementById('workout-sub-library').style.display !== 'none') renderLibrary();
-  if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
 }
 
 // ========== Custom video modal ==========
 function openVideoModal() {
+  editingVideoId = null;
   document.getElementById('vm-title').value = '';
   document.getElementById('vm-creator').value = '';
   document.getElementById('vm-url').value = '';
   document.getElementById('vm-duration').value = '';
+  document.getElementById('vm-fetch-status').textContent = '';
+  document.getElementById('vm-preview').style.display = 'none';
   document.querySelectorAll('#chips-vtag .chip').forEach(c => c.classList.remove('active'));
+  // 還原 modal 為「新增」模式
+  document.querySelector('#video-modal .modal-title').textContent = '收藏新影片';
+  document.querySelector('#video-modal .modal-sub').textContent = '貼上 YouTube 連結，自動抓影片資訊';
+  const saveBtn = document.querySelector('#video-modal .btn-primary');
+  saveBtn.textContent = '儲存';
+  saveBtn.setAttribute('onclick', 'saveCustomVideo()');
   openModal('video-modal');
+}
+
+// ========== YouTube 影片資訊自動抓取 ==========
+function extractYoutubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
+
+function guessDurationFromTitle(title) {
+  if (!title) return null;
+  // 抓「10 min」「15 MIN」「20 minute」「10分」「10分鐘」這些
+  const patterns = [
+    /(\d+)\s*(?:min|MIN|minute|minutes)\b/,
+    /(\d+)\s*分鐘?/,
+    /\b(\d+)\s*[-:]\s*?(?:min|MIN)/
+  ];
+  for (const p of patterns) {
+    const m = title.match(p);
+    if (m) {
+      const n = parseInt(m[1]);
+      if (n > 0 && n < 180) return n; // 合理範圍 1-180 分鐘
+    }
+  }
+  return null;
+}
+
+function guessTagsFromTitle(title) {
+  if (!title) return [];
+  const t = title.toLowerCase();
+  const tags = new Set();
+  // 強度
+  if (/hiit|high\s*intensity/.test(t)) { tags.add('hiit'); tags.add('high'); }
+  if (/cardio/.test(t)) tags.add('cardio');
+  if (/low\s*impact|no\s*jumping|no\s*jumps|knee\s*friendly|apartment|quiet/.test(t)) {
+    tags.add('low'); tags.add('no_jumping');
+  }
+  if (/beginner|easy|gentle|slow/.test(t)) tags.add('low');
+  // 身體部位
+  if (/abs?|core|sixpack|six\s*pack/.test(t)) tags.add('abs');
+  if (/butt|booty|glute/.test(t)) tags.add('butt');
+  if (/leg|thigh/.test(t)) tags.add('legs');
+  if (/arm|biceps|triceps/.test(t)) tags.add('arms');
+  if (/back|posture/.test(t)) tags.add('back');
+  if (/full\s*body|total\s*body/.test(t)) tags.add('full');
+  // 類型
+  if (/yoga|flow/.test(t)) tags.add('yoga');
+  if (/stretch|stretching|mobility/.test(t)) tags.add('stretch');
+  if (/morning/.test(t)) tags.add('morning');
+  if (/standing/.test(t)) tags.add('standing');
+  return Array.from(tags);
+}
+
+function onVideoUrlChange() {
+  // 使用者改網址時清除預覽，但不自動抓（避免每打一個字就 request）
+  const url = document.getElementById('vm-url').value.trim();
+  const status = document.getElementById('vm-fetch-status');
+  if (!url) {
+    status.textContent = '';
+    document.getElementById('vm-preview').style.display = 'none';
+    return;
+  }
+  const id = extractYoutubeId(url);
+  if (id) {
+    status.textContent = '✓ 偵測到 YouTube 連結，按「抓資訊」自動填寫';
+    status.style.color = 'var(--sage-deep)';
+  } else {
+    status.textContent = '✗ 不是有效的 YouTube 連結';
+    status.style.color = '#B07878';
+  }
+}
+
+async function fetchVideoInfo() {
+  const url = document.getElementById('vm-url').value.trim();
+  const status = document.getElementById('vm-fetch-status');
+  const btn = document.getElementById('vm-fetch-btn');
+  if (!url) { toast('請先貼 YouTube 連結'); return; }
+  const id = extractYoutubeId(url);
+  if (!id) {
+    status.textContent = '✗ 無法辨識 YouTube 影片 ID';
+    status.style.color = '#B07878';
+    return;
+  }
+
+  status.textContent = '抓取中...';
+  status.style.color = 'var(--ink-mute)';
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  // 用 YouTube 官方的 oEmbed（公開、免費、不需 API key）
+  // 直接從前端 fetch 可能會 CORS，所以用 noembed.com 這個 proxy
+  // 同時 fallback 給縮圖
+  try {
+    let info = null;
+    // 試 noembed 第一輪
+    try {
+      const r = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(url)}`);
+      if (r.ok) {
+        const data = await r.json();
+        if (data.title) {
+          info = { title: data.title, author: data.author_name || '' };
+        }
+      }
+    } catch(e) {}
+
+    // 第二輪：直接戳 YouTube oEmbed（少數情境會通）
+    if (!info) {
+      try {
+        const r = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+        if (r.ok) {
+          const data = await r.json();
+          info = { title: data.title, author: data.author_name || '' };
+        }
+      } catch(e) {}
+    }
+
+    // 縮圖（一定能拿到，因為是 YouTube 的固定路徑）
+    document.getElementById('vm-thumb').src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+    document.getElementById('vm-preview').style.display = 'flex';
+
+    if (info && info.title) {
+      // 填入標題與創作者
+      document.getElementById('vm-title').value = info.title;
+      document.getElementById('vm-creator').value = info.author;
+
+      // 從標題猜時長
+      const dur = guessDurationFromTitle(info.title);
+      if (dur && !document.getElementById('vm-duration').value) {
+        document.getElementById('vm-duration').value = dur;
+      }
+
+      // 從標題猜標籤（只在還沒選任何標籤時）
+      const hasAnyTag = document.querySelectorAll('#chips-vtag .chip.active').length > 0;
+      if (!hasAnyTag) {
+        const tags = guessTagsFromTitle(info.title);
+        tags.forEach(t => {
+          const chip = document.querySelector(`#chips-vtag .chip[data-val="${t}"]`);
+          if (chip) chip.classList.add('active');
+        });
+      }
+
+      status.textContent = '✓ 已自動填入，請確認後儲存';
+      status.style.color = 'var(--sage-deep)';
+    } else {
+      status.textContent = '⚠ 無法自動抓到標題（網路或影片限制），請手動填寫';
+      status.style.color = 'var(--amber)';
+    }
+  } catch (err) {
+    status.textContent = '✗ 抓取失敗：' + err.message;
+    status.style.color = '#B07878';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '抓資訊';
+  }
 }
 
 // ========================================
