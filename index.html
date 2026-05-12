@@ -683,6 +683,61 @@ input[type="range"]::-moz-range-thumb {
   color: var(--sage-deep);
 }
 
+/* History item v2 - with multi-line chips */
+.history-item-v2 {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.history-item-v2:active { transform: scale(0.99); background: var(--bg-soft); }
+.history-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.history-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.record-chip {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.record-chip strong {
+  color: var(--ink);
+  font-weight: 500;
+  margin-left: 1px;
+}
+.record-chip.sage {
+  background: var(--sage-bg);
+  color: var(--sage-deep);
+}
+.record-chip.sage strong { color: var(--sage-deep); font-weight: 600; }
+.record-chip.rose {
+  background: var(--rose-soft);
+  color: #8B6868;
+}
+.record-chip.rose strong { color: #8B6868; font-weight: 600; }
+.record-chip.note {
+  background: #FFF8E7;
+  color: #8B7355;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Empty state */
 .empty {
   text-align: center;
@@ -1685,7 +1740,8 @@ input[type="range"]::-moz-range-thumb {
     <button class="submit-btn" onclick="saveRecord()">儲存今日紀錄</button>
   </div>
 
-  <div class="section-title" style="margin: 28px 0 12px;">最近紀錄</div>
+  <div class="section-title" style="margin: 28px 0 8px;">最近紀錄</div>
+  <div style="font-size: 11px; color: var(--ink-mute); margin-bottom: 12px;">點任一筆可編輯，或到「我」→「所有紀錄」管理</div>
   <div id="history-list"></div>
 </div>
 
@@ -2933,15 +2989,57 @@ function renderHistory() {
     list.innerHTML = '<div class="empty"><div class="empty-emoji">✎</div><div class="empty-text">還沒有紀錄<br>從上方開始你的第一筆</div></div>';
     return;
   }
-  list.innerHTML = sorted.map(r => `
-    <div class="history-item">
-      <div>
-        <div class="history-date">${fmtDate(r.date)}</div>
-        <div class="history-meta">${r.fat ? '體脂 '+r.fat+'%' : ''} ${r.bmi ? '· BMI '+r.bmi : ''}</div>
+
+  // 欄位分組：身體組成 / 圍度 / 狀態
+  const composeFields = [
+    {key:'fat', label:'體脂', unit:'%'},
+    {key:'bmi', label:'BMI', unit:''},
+    {key:'visceral', label:'內臟', unit:''}
+  ];
+  const measureFields = [
+    {key:'waist', label:'腰', unit:''},
+    {key:'hip', label:'臀', unit:''},
+    {key:'chest', label:'胸', unit:''},
+    {key:'shoulder', label:'肩', unit:''},
+    {key:'upper_arm', label:'上臂', unit:''},
+    {key:'left_thigh', label:'左腿', unit:''},
+    {key:'right_thigh', label:'右腿', unit:''},
+    {key:'left_calf', label:'左小腿', unit:''},
+    {key:'right_calf', label:'右小腿', unit:''}
+  ];
+  const statusFields = [
+    {key:'sleep', label:'睡眠', unit:'h'},
+    {key:'fatigue', label:'疲勞', unit:''},
+    {key:'stress', label:'壓力', unit:''}
+  ];
+
+  const renderChips = (record, fields, cls) => {
+    return fields
+      .filter(f => record[f.key] !== null && record[f.key] !== undefined && record[f.key] !== '')
+      .map(f => `<span class="record-chip ${cls}">${f.label} <strong>${record[f.key]}${f.unit}</strong></span>`)
+      .join('');
+  };
+
+  list.innerHTML = sorted.map(r => {
+    const compose = renderChips(r, composeFields, 'sage');
+    const measures = renderChips(r, measureFields, 'sage');
+    const status = renderChips(r, statusFields, 'rose');
+    const hasNote = r.note && r.note.trim();
+
+    // 主要值
+    let mainValue = '—', mainUnit = '';
+    if (r.weight) { mainValue = r.weight; mainUnit = 'kg'; }
+
+    return `
+      <div class="history-item-v2" onclick="openEditRecord('${r.id}')">
+        <div class="history-row-top">
+          <div class="history-date">${fmtDate(r.date)}</div>
+          <div class="history-weight">${mainValue}<span style="font-size:12px; color: var(--ink-mute); margin-left:2px;">${mainUnit}</span></div>
+        </div>
+        ${compose || measures || status || hasNote ? `<div class="history-chips">${compose}${measures}${status}${hasNote ? `<span class="record-chip note">📝 ${escapeHtml(r.note.length > 20 ? r.note.slice(0, 20) + '...' : r.note)}</span>` : ''}</div>` : '<div style="font-size:11px; color: var(--ink-mute); margin-top: 4px;">僅體重資料</div>'}
       </div>
-      <div class="history-weight">${r.weight || '—'}<span style="font-size:12px; color: var(--ink-mute); margin-left:2px;">kg</span></div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // ========== WORKOUT ==========
