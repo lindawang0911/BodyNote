@@ -820,9 +820,6 @@ input[type="range"]::-moz-range-thumb {
 .chart-wrap {
   position: relative;
 }
-.chart-dot-hit {
-  cursor: pointer;
-}
 .chart-dot {
   pointer-events: none;
   transition: r 0.15s ease;
@@ -5435,104 +5432,148 @@ function renderChart(data, unit) {
   const path = points.map((p,i) => (i===0?'M':'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
   const area = path + ` L${points[points.length-1].x.toFixed(1)},${h} L${points[0].x.toFixed(1)},${h} Z`;
   const safeUnit = (unit || '').replace(/"/g, '&quot;');
+  // 把所有點資料序列化進 dataset，互動時從這裡查
+  const pointsJson = JSON.stringify(points).replace(/"/g, '&quot;');
+  // 紀錄太多時，視覺圓點縮小、稍微透明，免得連成一團
+  const dotR = points.length > 60 ? 1.2 : (points.length > 30 ? 1.8 : 2.5);
+  const dotOpacity = points.length > 60 ? 0.55 : (points.length > 30 ? 0.75 : 1);
   return `
     <div class="chart-wrap">
-      <svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+      <svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"
+           data-points="${pointsJson}" data-unit="${safeUnit}">
         <path d="${area}" fill="rgba(168, 184, 154, 0.15)"/>
         <path d="${path}" fill="none" stroke="#7A8B6F" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
         <line class="chart-vline" x1="0" y1="0" x2="0" y2="${h}" stroke="#7A8B6F" stroke-width="1" stroke-dasharray="3,3" opacity="0" style="pointer-events:none;"/>
-        ${points.map((p, i) => `
-          <circle class="chart-dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="#7A8B6F"/>
-          <circle class="chart-dot-hit" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="10" fill="transparent" data-i="${i}" data-x="${p.x.toFixed(1)}" data-y="${p.y.toFixed(1)}" data-value="${p.value}" data-date="${p.date}" data-unit="${safeUnit}" onclick="showChartTooltip(event)"/>
-        `).join('')}
+        ${points.map((p, i) => `<circle class="chart-dot" data-i="${i}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${dotR}" fill="#7A8B6F" opacity="${dotOpacity}" style="pointer-events:none;"/>`).join('')}
+        <rect class="chart-capture" x="0" y="0" width="${w}" height="${h}" fill="transparent"
+              onpointerdown="onChartPointer(event)" onpointermove="onChartPointer(event)"
+              style="cursor:crosshair; touch-action:pan-y;"/>
       </svg>
       <div class="chart-tooltip" style="display:none;"></div>
     </div>
   `;
 }
 
-// 顯示折線圖上的數值/日期 tooltip
-function showChartTooltip(e) {
-  e.stopPropagation();
-  const hit = e.currentTarget;
-  const wrap = hit.closest('.chart-wrap');
-  if (!wrap) return;
+// 共用：在某張圖上 highlight 第 idx 個點（不影響其他圖）
+function highlightChartPoint(wrap, idx) {
   const svg = wrap.querySelector('.chart-svg');
   const tooltip = wrap.querySelector('.chart-tooltip');
   const vline = wrap.querySelector('.chart-vline');
+  if (!svg || !tooltip) return;
 
-  // 先把所有圖上的高亮與垂直線關掉
-  document.querySelectorAll('.chart-dot.active').forEach(d => {
+  let points;
+  try { points = JSON.parse(svg.getAttribute('data-points')); } catch (err) { return; }
+  if (!points || !points[idx]) return;
+  const p = points[idx];
+  const unit = svg.getAttribute('data-unit') || '';
+
+  // 還原本圖所有點為原始大小（依該圖筆數）
+  const n = points.length;
+  const baseR = n > 60 ? 1.2 : (n > 30 ? 1.8 : 2.5);
+  const baseOp = n > 60 ? 0.55 : (n > 30 ? 0.75 : 1);
+  wrap.querySelectorAll('.chart-dot').forEach(d => {
     d.classList.remove('active');
-    d.setAttribute('r', '2.5');
+    d.setAttribute('r', baseR);
+    d.setAttribute('opacity', baseOp);
   });
-  document.querySelectorAll('.chart-vline').forEach(l => {
-    l.setAttribute('opacity', '0');
-  });
-  document.querySelectorAll('.chart-tooltip.show').forEach(t => {
-    t.classList.remove('show');
-    setTimeout(() => { t.style.display = 'none'; }, 150);
-  });
-
-  // 高亮被點的圓點（hit 的前一個 sibling 是視覺圓點）
-  const dot = hit.previousElementSibling;
-  if (dot && dot.classList.contains('chart-dot')) {
-    dot.classList.add('active');
-    dot.setAttribute('r', '4');
+  // 高亮目標點
+  const target = wrap.querySelector('.chart-dot[data-i="' + idx + '"]');
+  if (target) {
+    target.classList.add('active');
+    target.setAttribute('r', '4');
+    target.setAttribute('opacity', '1');
   }
-
-  const vbX = parseFloat(hit.getAttribute('data-x'));
-  const vbY = parseFloat(hit.getAttribute('data-y'));
-
-  // 顯示垂直線（從點往下到底）
+  // 垂直線
   if (vline) {
-    vline.setAttribute('x1', vbX);
-    vline.setAttribute('x2', vbX);
-    vline.setAttribute('y1', vbY);
+    vline.setAttribute('x1', p.x);
+    vline.setAttribute('x2', p.x);
+    vline.setAttribute('y1', p.y);
     vline.setAttribute('y2', 60);
     vline.setAttribute('opacity', '0.5');
   }
-
-  // 算 tooltip 在容器內的像素位置（SVG 是 100% width，要把 viewBox 的座標換算回實際像素）
+  // tooltip 位置（viewBox → 實際像素）
   const svgRect = svg.getBoundingClientRect();
-  const pxX = (vbX / 320) * svgRect.width;
-  const pxY = (vbY / 60) * svgRect.height;
-
-  const value = hit.getAttribute('data-value');
-  const date = hit.getAttribute('data-date');
-  const unit = hit.getAttribute('data-unit') || '';
-  // 日期格式化：YYYY-MM-DD → YYYY/M/D
-  let dateLabel = date;
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  if (m) dateLabel = `${m[1]}/${parseInt(m[2])}/${parseInt(m[3])}`;
-
-  tooltip.innerHTML = `
-    <div class="tt-val">${value}${unit ? ' ' + unit : ''}</div>
-    <div class="tt-date">${dateLabel}</div>
-  `;
+  const pxX = (p.x / 320) * svgRect.width;
+  const pxY = (p.y / 60) * svgRect.height;
+  // 日期格式：YYYY-MM-DD → YYYY/M/D
+  let dateLabel = p.date;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(p.date || '');
+  if (m) dateLabel = m[1] + '/' + parseInt(m[2]) + '/' + parseInt(m[3]);
+  tooltip.innerHTML =
+    '<div class="tt-val">' + p.value + (unit ? ' ' + unit : '') + '</div>' +
+    '<div class="tt-date">' + dateLabel + '</div>';
   tooltip.style.display = 'block';
   tooltip.style.left = pxX + 'px';
   tooltip.style.top = pxY + 'px';
-  // 強制 reflow 讓 transition 生效
   void tooltip.offsetWidth;
   tooltip.classList.add('show');
 }
 
-// 點圖表外的地方關掉 tooltip
-document.addEventListener('click', function(e) {
-  if (e.target.classList && e.target.classList.contains('chart-dot-hit')) return;
-  document.querySelectorAll('.chart-tooltip.show').forEach(t => {
-    t.classList.remove('show');
-    setTimeout(() => { t.style.display = 'none'; }, 150);
+// 清除「除了 keepWrap 以外」所有圖的高亮（傳 null 表示全清）
+function clearChartHighlights(keepWrap) {
+  document.querySelectorAll('.chart-wrap').forEach(wrap => {
+    if (wrap === keepWrap) return;
+    const svg = wrap.querySelector('.chart-svg');
+    let n = 0;
+    if (svg) { try { n = (JSON.parse(svg.getAttribute('data-points') || '[]') || []).length; } catch (err) {} }
+    const r = n > 60 ? 1.2 : (n > 30 ? 1.8 : 2.5);
+    const op = n > 60 ? 0.55 : (n > 30 ? 0.75 : 1);
+    wrap.querySelectorAll('.chart-dot.active').forEach(d => {
+      d.classList.remove('active');
+      d.setAttribute('r', r);
+      d.setAttribute('opacity', op);
+    });
+    const vline = wrap.querySelector('.chart-vline');
+    if (vline) vline.setAttribute('opacity', '0');
+    const tt = wrap.querySelector('.chart-tooltip');
+    if (tt && tt.classList.contains('show')) {
+      tt.classList.remove('show');
+      setTimeout(() => { tt.style.display = 'none'; }, 150);
+    }
   });
-  document.querySelectorAll('.chart-dot.active').forEach(d => {
-    d.classList.remove('active');
-    d.setAttribute('r', '2.5');
-  });
-  document.querySelectorAll('.chart-vline').forEach(l => {
-    l.setAttribute('opacity', '0');
-  });
+}
+
+// 主互動：手指/滑鼠在圖上按下或拖動
+function onChartPointer(e) {
+  // 滑鼠：只在按住時才反應 move（避免 hover 一直觸發）
+  if (e.pointerType === 'mouse' && e.type === 'pointermove' && e.buttons === 0) return;
+  e.preventDefault();
+  const rect = e.currentTarget;  // 透明捕捉層
+  const svg = rect.ownerSVGElement;
+  const wrap = svg && svg.closest('.chart-wrap');
+  if (!svg || !wrap) return;
+
+  // client 座標 → viewBox X
+  const svgRect = svg.getBoundingClientRect();
+  if (svgRect.width === 0) return;
+  const vbX = ((e.clientX - svgRect.left) / svgRect.width) * 320;
+
+  let points;
+  try { points = JSON.parse(svg.getAttribute('data-points')); } catch (err) { return; }
+  if (!points || !points.length) return;
+
+  // 找最接近的 i（X 距離最近）
+  let bestI = 0, bestDist = Infinity;
+  for (let i = 0; i < points.length; i++) {
+    const d = Math.abs(points[i].x - vbX);
+    if (d < bestDist) { bestDist = d; bestI = i; }
+  }
+
+  clearChartHighlights(wrap);
+  highlightChartPoint(wrap, bestI);
+
+  // 拖動時抓住 pointer（手指滑出圖外仍持續）
+  if (e.type === 'pointerdown') {
+    try { rect.setPointerCapture(e.pointerId); } catch (err) {}
+  }
+}
+
+// 點圖外、捲動時關掉所有 tooltip
+document.addEventListener('pointerdown', function(e) {
+  if (e.target && e.target.closest && e.target.closest('.chart-wrap')) return;
+  clearChartHighlights(null);
 });
+window.addEventListener('scroll', function() { clearChartHighlights(null); }, { passive: true, capture: true });
 
 // ========== ME / Achievements ==========
 function renderMe() {
