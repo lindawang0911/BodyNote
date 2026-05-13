@@ -882,6 +882,55 @@ input[type="range"]::-moz-range-thumb {
   -webkit-overflow-scrolling: touch;
   padding-bottom: 4px;
 }
+.custom-range-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.custom-range-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.custom-range-row label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  min-width: 28px;
+}
+.custom-range-row input[type="date"] {
+  flex: 1;
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  min-width: 0;
+}
+.custom-range-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background: var(--sage-deep);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--sans);
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.custom-range-hint {
+  font-size: 11px;
+  color: var(--ink-mute);
+  text-align: center;
+  margin-top: 8px;
+}
 .filter-pill {
   flex-shrink: 0;
   padding: 7px 14px;
@@ -2546,17 +2595,49 @@ input[type="range"]::-moz-range-thumb {
 
   <!-- 數據趨勢 -->
   <div id="trends-sub-data">
-    <div class="filter-pills">
+    <div class="filter-pills" data-scope="data">
       <div class="filter-pill active" data-range="7">7 天</div>
       <div class="filter-pill" data-range="30">30 天</div>
       <div class="filter-pill" data-range="90">90 天</div>
       <div class="filter-pill" data-range="all">全部</div>
+      <div class="filter-pill" data-range="custom">自訂</div>
+    </div>
+    <div class="custom-range-panel" id="custom-range-data" style="display:none;">
+      <div class="custom-range-row">
+        <label>從</label>
+        <input type="date" id="custom-from-data">
+      </div>
+      <div class="custom-range-row">
+        <label>到</label>
+        <input type="date" id="custom-to-data">
+      </div>
+      <button class="custom-range-btn" onclick="applyCustomRange('data')">套用區間</button>
+      <div class="custom-range-hint" id="custom-hint-data"></div>
     </div>
     <div id="trends-list"></div>
   </div>
 
   <!-- 身體傳記 -->
   <div id="trends-sub-story" style="display:none;">
+    <div class="filter-pills" data-scope="story">
+      <div class="filter-pill" data-range="30">30 天</div>
+      <div class="filter-pill" data-range="90">90 天</div>
+      <div class="filter-pill" data-range="365">一年</div>
+      <div class="filter-pill active" data-range="all">全部</div>
+      <div class="filter-pill" data-range="custom">自訂</div>
+    </div>
+    <div class="custom-range-panel" id="custom-range-story" style="display:none;">
+      <div class="custom-range-row">
+        <label>從</label>
+        <input type="date" id="custom-from-story">
+      </div>
+      <div class="custom-range-row">
+        <label>到</label>
+        <input type="date" id="custom-to-story">
+      </div>
+      <button class="custom-range-btn" onclick="applyCustomRange('story')">套用區間</button>
+      <div class="custom-range-hint" id="custom-hint-story"></div>
+    </div>
     <div id="story-container"></div>
   </div>
 </div>
@@ -3709,15 +3790,17 @@ function switchTrendsTab(tab) {
 function renderBodyStory() {
   const container = document.getElementById('story-container');
   // 篩出有體重的紀錄
-  const records = state.records
+  let records = state.records
     .filter(r => r.weight !== null && r.weight !== undefined && !isNaN(r.weight))
     .sort((a,b) => a.date.localeCompare(b.date));
+  // 套用使用者選的區間
+  records = applyTrendsFilter(records, trendsStoryFilter);
 
   if (records.length < 5) {
     container.innerHTML = `
       <div class="empty" style="padding: 60px 20px;">
         <div class="empty-emoji">📖</div>
-        <div class="empty-text">至少需要 5 筆體重紀錄<br>才能編織出你的身體故事<br><br>繼續記下去，這裡會慢慢長出來的</div>
+        <div class="empty-text">這個區間至少需要 5 筆體重紀錄<br>才能編織出你的身體故事<br><br>試試看選更長的區間，或繼續記錄</div>
       </div>
     `;
     return;
@@ -3753,8 +3836,12 @@ function renderBodyStory() {
   const turningPoints = findTurningPoints(records);
 
   // === 體脂統計 ===
-  const fatRecords = state.records
-    .filter(r => r.fat !== null && r.fat !== undefined && !isNaN(r.fat) && r.fat < 60 && r.fat > 5);
+  const fatRecords = applyTrendsFilter(
+    state.records
+      .filter(r => r.fat !== null && r.fat !== undefined && !isNaN(r.fat) && r.fat < 60 && r.fat > 5)
+      .sort((a,b) => a.date.localeCompare(b.date)),
+    trendsStoryFilter
+  );
   let fatStats = null;
   if (fatRecords.length >= 3) {
     const fats = fatRecords.map(r => r.fat);
@@ -5156,26 +5243,111 @@ function renderTodayWorkout() {
 }
 
 // ========== TRENDS ==========
-let trendRange = 7;
+// 趨勢頁兩個 sub-tab 各自的篩選狀態
+// type: 'days' | 'all' | 'custom'
+let trendsDataFilter = { type: 'days', days: 7, from: null, to: null };
+let trendsStoryFilter = { type: 'all', days: null, from: null, to: null };
+
 function setupFilters() {
-  document.querySelectorAll('.filter-pill').forEach(p => {
-    p.addEventListener('click', () => {
-      document.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
-      p.classList.add('active');
-      trendRange = p.dataset.range;
-      renderTrends();
-    });
+  // 數據趨勢的 pills
+  document.querySelectorAll('.filter-pills[data-scope="data"] .filter-pill').forEach(p => {
+    p.addEventListener('click', () => handleFilterPillClick(p, 'data'));
   });
+  // 身體傳記的 pills
+  document.querySelectorAll('.filter-pills[data-scope="story"] .filter-pill').forEach(p => {
+    p.addEventListener('click', () => handleFilterPillClick(p, 'story'));
+  });
+}
+
+function handleFilterPillClick(pillEl, scope) {
+  // 切換 active
+  const parent = pillEl.parentElement;
+  parent.querySelectorAll('.filter-pill').forEach(x => x.classList.remove('active'));
+  pillEl.classList.add('active');
+
+  const range = pillEl.dataset.range;
+  const panel = document.getElementById('custom-range-' + scope);
+
+  if (range === 'custom') {
+    // 展開日期面板；預設帶入「到」為今天、「從」為 30 天前
+    if (panel) {
+      panel.style.display = '';
+      const fromEl = document.getElementById('custom-from-' + scope);
+      const toEl = document.getElementById('custom-to-' + scope);
+      const today = new Date();
+      const past = new Date();
+      past.setDate(today.getDate() - 30);
+      if (!toEl.value) toEl.value = toISODate(today);
+      if (!fromEl.value) fromEl.value = toISODate(past);
+    }
+    return; // 等使用者按「套用」才真的篩
+  }
+
+  // 非自訂：收起面板、更新狀態、重繪
+  if (panel) panel.style.display = 'none';
+  const filter = (scope === 'data') ? trendsDataFilter : trendsStoryFilter;
+  if (range === 'all') {
+    filter.type = 'all';
+  } else {
+    filter.type = 'days';
+    filter.days = parseInt(range);
+  }
+  if (scope === 'data') renderTrends();
+  else renderBodyStory();
+}
+
+function applyCustomRange(scope) {
+  const fromEl = document.getElementById('custom-from-' + scope);
+  const toEl = document.getElementById('custom-to-' + scope);
+  const hintEl = document.getElementById('custom-hint-' + scope);
+  const from = fromEl.value;
+  const to = toEl.value;
+  if (!from || !to) {
+    if (hintEl) hintEl.textContent = '請選擇起訖日期';
+    return;
+  }
+  if (from > to) {
+    if (hintEl) hintEl.textContent = '起始日期不能晚於結束日期';
+    return;
+  }
+  const filter = (scope === 'data') ? trendsDataFilter : trendsStoryFilter;
+  filter.type = 'custom';
+  filter.from = from;
+  filter.to = to;
+  if (hintEl) {
+    const days = Math.round((new Date(to) - new Date(from)) / 86400000) + 1;
+    hintEl.textContent = `已套用：共 ${days} 天`;
+  }
+  if (scope === 'data') renderTrends();
+  else renderBodyStory();
+}
+
+// 工具：Date → YYYY-MM-DD（避免時區跑掉）
+function toISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// 套用篩選到一個 records 陣列（已 sort by date asc）
+function applyTrendsFilter(records, filter) {
+  if (filter.type === 'all') return records;
+  if (filter.type === 'custom') {
+    return records.filter(r => r.date >= filter.from && r.date <= filter.to);
+  }
+  // days
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - parseInt(filter.days));
+  // 用字串比較也行，但 cutoff 是當下時間，轉成 ISO date 比較
+  const cutoffStr = toISODate(cutoff);
+  return records.filter(r => r.date >= cutoffStr);
 }
 
 function renderTrends() {
   const list = document.getElementById('trends-list');
   let records = [...state.records].sort((a,b)=>a.date.localeCompare(b.date));
-  if (trendRange !== 'all') {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - parseInt(trendRange));
-    records = records.filter(r => new Date(r.date) >= cutoff);
-  }
+  records = applyTrendsFilter(records, trendsDataFilter);
   if (records.length < 2) {
     list.innerHTML = '<div class="empty"><div class="empty-emoji">∿</div><div class="empty-text">需要至少 2 筆紀錄才能看趨勢<br>持續記錄幾天再來看</div></div>';
     return;
