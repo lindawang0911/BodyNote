@@ -5268,6 +5268,7 @@ function renderChart(data, unit) {
       <svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
         <path d="${area}" fill="rgba(168, 184, 154, 0.15)"/>
         <path d="${path}" fill="none" stroke="#7A8B6F" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        <line class="chart-vline" x1="0" y1="0" x2="0" y2="${h}" stroke="#7A8B6F" stroke-width="1" stroke-dasharray="3,3" opacity="0" style="pointer-events:none;"/>
         ${points.map((p, i) => `
           <circle class="chart-dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="#7A8B6F"/>
           <circle class="chart-dot-hit" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="10" fill="transparent" data-i="${i}" data-x="${p.x.toFixed(1)}" data-y="${p.y.toFixed(1)}" data-value="${p.value}" data-date="${p.date}" data-unit="${safeUnit}" onclick="showChartTooltip(event)"/>
@@ -5286,11 +5287,15 @@ function showChartTooltip(e) {
   if (!wrap) return;
   const svg = wrap.querySelector('.chart-svg');
   const tooltip = wrap.querySelector('.chart-tooltip');
+  const vline = wrap.querySelector('.chart-vline');
 
-  // 先把所有圖上的高亮關掉
+  // 先把所有圖上的高亮與垂直線關掉
   document.querySelectorAll('.chart-dot.active').forEach(d => {
     d.classList.remove('active');
     d.setAttribute('r', '2.5');
+  });
+  document.querySelectorAll('.chart-vline').forEach(l => {
+    l.setAttribute('opacity', '0');
   });
   document.querySelectorAll('.chart-tooltip.show').forEach(t => {
     t.classList.remove('show');
@@ -5304,20 +5309,30 @@ function showChartTooltip(e) {
     dot.setAttribute('r', '4');
   }
 
-  // 算 tooltip 在容器內的像素位置（SVG 是 100% width，要把 viewBox 的座標換算回實際像素）
-  const svgRect = svg.getBoundingClientRect();
   const vbX = parseFloat(hit.getAttribute('data-x'));
   const vbY = parseFloat(hit.getAttribute('data-y'));
+
+  // 顯示垂直線（從點往下到底）
+  if (vline) {
+    vline.setAttribute('x1', vbX);
+    vline.setAttribute('x2', vbX);
+    vline.setAttribute('y1', vbY);
+    vline.setAttribute('y2', 60);
+    vline.setAttribute('opacity', '0.5');
+  }
+
+  // 算 tooltip 在容器內的像素位置（SVG 是 100% width，要把 viewBox 的座標換算回實際像素）
+  const svgRect = svg.getBoundingClientRect();
   const pxX = (vbX / 320) * svgRect.width;
   const pxY = (vbY / 60) * svgRect.height;
 
   const value = hit.getAttribute('data-value');
   const date = hit.getAttribute('data-date');
   const unit = hit.getAttribute('data-unit') || '';
-  // 日期格式化：YYYY-MM-DD → M/D
+  // 日期格式化：YYYY-MM-DD → YYYY/M/D
   let dateLabel = date;
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  if (m) dateLabel = `${parseInt(m[2])}/${parseInt(m[3])}`;
+  if (m) dateLabel = `${m[1]}/${parseInt(m[2])}/${parseInt(m[3])}`;
 
   tooltip.innerHTML = `
     <div class="tt-val">${value}${unit ? ' ' + unit : ''}</div>
@@ -5341,6 +5356,9 @@ document.addEventListener('click', function(e) {
   document.querySelectorAll('.chart-dot.active').forEach(d => {
     d.classList.remove('active');
     d.setAttribute('r', '2.5');
+  });
+  document.querySelectorAll('.chart-vline').forEach(l => {
+    l.setAttribute('opacity', '0');
   });
 });
 
