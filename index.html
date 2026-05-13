@@ -1273,6 +1273,247 @@ input[type="range"]::-moz-range-thumb {
 }
 .record-panel { display: none; animation: fadeUp 0.3s ease; }
 .record-panel.active { display: block; }
+
+/* ========== Body Story (身體傳記) ========== */
+.story-hero {
+  background: linear-gradient(135deg, #EEF2EA 0%, #F5E4E4 100%);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.story-hero::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 184, 154, 0.3), transparent 70%);
+}
+.story-hero-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--ink);
+  margin-bottom: 4px;
+  position: relative;
+}
+.story-hero-sub {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+  position: relative;
+}
+.story-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  position: relative;
+}
+.story-stat {
+  text-align: center;
+}
+.story-stat-value {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--sage-deep);
+  font-weight: 500;
+  line-height: 1.2;
+}
+.story-stat-label {
+  font-size: 10px;
+  color: var(--ink-mute);
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+
+/* Story chart container */
+.story-chart-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px 14px 14px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.story-chart-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+.story-chart-sub {
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-bottom: 14px;
+  padding: 0 4px;
+}
+.story-chart-svg {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+/* Year/period stats table */
+.story-period-list {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.story-period-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.story-period-item:last-child { border-bottom: none; }
+.story-period-year {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink);
+}
+.story-period-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--line-soft);
+  border-radius: 3px;
+  margin: 0 12px;
+  position: relative;
+  overflow: hidden;
+}
+.story-period-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage-light, #A8B89A), var(--sage-deep));
+  border-radius: 3px;
+}
+.story-period-avg {
+  font-family: var(--serif);
+  font-size: 14px;
+  color: var(--sage-deep);
+  font-weight: 500;
+  min-width: 60px;
+  text-align: right;
+}
+.story-period-meta {
+  font-size: 10px;
+  color: var(--ink-mute);
+  text-align: right;
+  min-width: 60px;
+}
+
+/* Distribution / records */
+.story-distribution {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.dist-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.dist-row:last-child { margin-bottom: 0; }
+.dist-label {
+  min-width: 80px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+.dist-bar {
+  flex: 1;
+  height: 18px;
+  background: var(--bg-soft);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.dist-bar-fill {
+  height: 100%;
+  background: var(--sage);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  min-width: 24px;
+}
+.dist-bar-fill.home { background: var(--sage-deep); }
+.dist-count {
+  min-width: 50px;
+  text-align: right;
+  color: var(--ink-mute);
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+/* Records section */
+.story-records-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.story-record-card {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.story-record-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.story-record-label {
+  font-size: 10px;
+  color: var(--ink-mute);
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.story-record-value {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.story-record-date {
+  font-size: 10px;
+  color: var(--ink-mute);
+  margin-top: 2px;
+  font-family: var(--serif);
+  font-style: italic;
+}
+
+/* Insight cards */
+.story-insight {
+  background: linear-gradient(135deg, var(--sage-bg), var(--rose-soft));
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+.story-insight-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--sage-deep);
+  margin-bottom: 6px;
+}
+.story-insight-content {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.7;
+}
+.story-insight-content strong { color: var(--sage-deep); font-weight: 500; }
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2243,14 +2484,26 @@ input[type="range"]::-moz-range-thumb {
   <div class="greeting">趨勢</div>
   <div class="greeting-sub">身體的長期樣貌</div>
 
-  <div class="filter-pills">
-    <div class="filter-pill active" data-range="7">7 天</div>
-    <div class="filter-pill" data-range="30">30 天</div>
-    <div class="filter-pill" data-range="90">90 天</div>
-    <div class="filter-pill" data-range="all">全部</div>
+  <div class="photo-tabs" style="margin-top: 16px;">
+    <div class="photo-tab active" data-ttab="data" onclick="switchTrendsTab('data')">📈 數據趨勢</div>
+    <div class="photo-tab" data-ttab="story" onclick="switchTrendsTab('story')">📖 身體傳記</div>
   </div>
 
-  <div id="trends-list"></div>
+  <!-- 數據趨勢 -->
+  <div id="trends-sub-data">
+    <div class="filter-pills">
+      <div class="filter-pill active" data-range="7">7 天</div>
+      <div class="filter-pill" data-range="30">30 天</div>
+      <div class="filter-pill" data-range="90">90 天</div>
+      <div class="filter-pill" data-range="all">全部</div>
+    </div>
+    <div id="trends-list"></div>
+  </div>
+
+  <!-- 身體傳記 -->
+  <div id="trends-sub-story" style="display:none;">
+    <div id="story-container"></div>
+  </div>
 </div>
 
 <!-- ====== PHOTOS ====== -->
@@ -2716,10 +2969,11 @@ input[type="range"]::-moz-range-thumb {
 
       <p style="font-size: 12px; color: var(--ink-mute); line-height: 1.7;">
         支援的欄位名稱（中英文都可以）：<br>
-        日期 / date、體重 / weight、體脂 / fat、BMI、<br>
-        腰圍 / waist、臀圍 / hip、胸圍 / chest、<br>
-        左大腿 / left_thigh、右大腿 / right_thigh、<br>
-        睡眠 / sleep、疲勞 / fatigue、壓力 / stress、備註 / note
+        <strong style="color: var(--ink-soft);">基本：</strong>日期 / date、體重 / weight、體脂 / fat、BMI、內臟脂肪 / visceral<br>
+        <strong style="color: var(--ink-soft);">圍度：</strong>腰圍 / waist、臀圍 / hip、胸圍 / chest、肩寬 / shoulder、上臂 / upper_arm、左大腿 / left_thigh、右大腿 / right_thigh、左小腿 / left_calf、右小腿 / right_calf<br>
+        <strong style="color: var(--ink-soft);">狀態：</strong>睡眠 / sleep、疲勞 / fatigue、壓力 / stress<br>
+        <strong style="color: var(--ink-soft);">腸胃：</strong>排便 / bowel_type、排便次數 / bowel_count、腹部感覺 / abdomen_feel<br>
+        <strong style="color: var(--ink-soft);">其他：</strong>備註 / note
       </p>
     </div>
 
@@ -3384,6 +3638,386 @@ function switchRecordTab(tab) {
   document.querySelectorAll('.record-panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('record-panel-' + tab);
   if (panel) panel.classList.add('active');
+}
+
+// 切換趨勢頁 sub-tab
+function switchTrendsTab(tab) {
+  document.querySelectorAll('[data-ttab]').forEach(t => t.classList.toggle('active', t.dataset.ttab === tab));
+  document.getElementById('trends-sub-data').style.display = (tab === 'data') ? '' : 'none';
+  document.getElementById('trends-sub-story').style.display = (tab === 'story') ? '' : 'none';
+  if (tab === 'story') renderBodyStory();
+}
+
+// ========================================
+// ========== 身體傳記 ==========
+// ========================================
+function renderBodyStory() {
+  const container = document.getElementById('story-container');
+  // 篩出有體重的紀錄
+  const records = state.records
+    .filter(r => r.weight !== null && r.weight !== undefined && !isNaN(r.weight))
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  if (records.length < 5) {
+    container.innerHTML = `
+      <div class="empty" style="padding: 60px 20px;">
+        <div class="empty-emoji">📖</div>
+        <div class="empty-text">至少需要 5 筆體重紀錄<br>才能編織出你的身體故事<br><br>繼續記下去，這裡會慢慢長出來的</div>
+      </div>
+    `;
+    return;
+  }
+
+  // === 基本統計 ===
+  const weights = records.map(r => r.weight);
+  const minW = Math.min(...weights);
+  const maxW = Math.max(...weights);
+  const median = calcMedian(weights);
+  const mean = +(weights.reduce((a,b) => a+b, 0) / weights.length).toFixed(1);
+
+  // 最輕、最重那一天
+  const minRec = records.find(r => r.weight === minW);
+  const maxRec = records.find(r => r.weight === maxW);
+
+  // 時間跨度
+  const firstDate = records[0].date;
+  const lastDate = records[records.length - 1].date;
+  const days = Math.round((new Date(lastDate) - new Date(firstDate)) / 86400000);
+  const years = (days / 365).toFixed(1);
+
+  // === 家鄉範圍：找最常停留的 2kg 區間 ===
+  const homeRange = findHomeRange(weights);
+
+  // === 各年平均 ===
+  const yearlyStats = calcYearlyStats(records);
+
+  // === 體重區間分布 ===
+  const distribution = calcDistribution(weights, homeRange);
+
+  // === 關鍵轉折點 ===
+  const turningPoints = findTurningPoints(records);
+
+  // === 體脂統計 ===
+  const fatRecords = state.records
+    .filter(r => r.fat !== null && r.fat !== undefined && !isNaN(r.fat) && r.fat < 60 && r.fat > 5);
+  let fatStats = null;
+  if (fatRecords.length >= 3) {
+    const fats = fatRecords.map(r => r.fat);
+    fatStats = {
+      min: Math.min(...fats),
+      max: Math.max(...fats),
+      median: calcMedian(fats),
+      minRec: fatRecords.find(r => r.fat === Math.min(...fats)),
+      maxRec: fatRecords.find(r => r.fat === Math.max(...fats))
+    };
+  }
+
+  // === 組合 HTML ===
+  let html = '';
+
+  // 1. Hero card
+  html += `
+    <div class="story-hero">
+      <div class="story-hero-title">你的 ${years} 年身體傳記</div>
+      <div class="story-hero-sub">${firstDate} ~ ${lastDate} · ${records.length} 筆紀錄</div>
+      <div class="story-stat-row">
+        <div class="story-stat">
+          <div class="story-stat-value">${median} <span style="font-size: 12px;">kg</span></div>
+          <div class="story-stat-label">MEDIAN</div>
+        </div>
+        <div class="story-stat">
+          <div class="story-stat-value">${homeRange[0]}-${homeRange[1]}</div>
+          <div class="story-stat-label">身體的家鄉</div>
+        </div>
+        <div class="story-stat">
+          <div class="story-stat-value">${(maxW - minW).toFixed(1)}</div>
+          <div class="story-stat-label">最大波動 kg</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 2. 主圖表
+  html += `
+    <div class="story-chart-card">
+      <div class="story-chart-title">完整時間軸</div>
+      <div class="story-chart-sub">綠線：30 天滾動平均 · 淺色點：每日紀錄</div>
+      ${renderStoryChart(records, homeRange)}
+    </div>
+  `;
+
+  // 3. 各年平均
+  if (yearlyStats.length >= 2) {
+    const maxAvg = Math.max(...yearlyStats.map(y => y.avg));
+    const minAvg = Math.min(...yearlyStats.map(y => y.avg));
+    html += `
+      <div class="story-period-list">
+        <div class="story-chart-title" style="margin-bottom: 14px;">各年平均</div>
+        ${yearlyStats.map(y => {
+          const pct = ((y.avg - minAvg) / (maxAvg - minAvg || 1)) * 100;
+          return `
+            <div class="story-period-item">
+              <div class="story-period-year">${y.year}</div>
+              <div class="story-period-bar">
+                <div class="story-period-bar-fill" style="width: ${pct}%"></div>
+              </div>
+              <div>
+                <div class="story-period-avg">${y.avg} kg</div>
+                <div class="story-period-meta">${y.count} 筆</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  // 4. 體重區間分布
+  html += `
+    <div class="story-distribution">
+      <div class="story-chart-title" style="margin-bottom: 12px;">體重區間分布</div>
+      <div style="font-size: 11px; color: var(--ink-mute); margin-bottom: 14px;">你的身體大部分時間都停留在哪</div>
+      ${distribution.map(d => `
+        <div class="dist-row">
+          <div class="dist-label">${d.range}</div>
+          <div class="dist-bar">
+            <div class="dist-bar-fill ${d.isHome ? 'home' : ''}" style="width: ${d.pct}%">${d.pct > 10 ? d.pct.toFixed(0)+'%' : ''}</div>
+          </div>
+          <div class="dist-count">${d.count} 天</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  // 5. 個人紀錄
+  html += `
+    <div class="story-chart-title" style="margin: 24px 0 12px; padding: 0 4px;">你的身體紀錄</div>
+    <div class="story-records-grid">
+      <div class="story-record-card">
+        <div class="story-record-icon">⬇</div>
+        <div class="story-record-label">最輕</div>
+        <div class="story-record-value">${minW} kg</div>
+        <div class="story-record-date">${minRec.date}</div>
+      </div>
+      <div class="story-record-card">
+        <div class="story-record-icon">⬆</div>
+        <div class="story-record-label">最重</div>
+        <div class="story-record-value">${maxW} kg</div>
+        <div class="story-record-date">${maxRec.date}</div>
+      </div>
+      ${fatStats ? `
+        <div class="story-record-card">
+          <div class="story-record-icon">🌿</div>
+          <div class="story-record-label">體脂最低</div>
+          <div class="story-record-value">${fatStats.min}%</div>
+          <div class="story-record-date">${fatStats.minRec.date}</div>
+        </div>
+        <div class="story-record-card">
+          <div class="story-record-icon">📊</div>
+          <div class="story-record-label">體脂中位數</div>
+          <div class="story-record-value">${fatStats.median}%</div>
+          <div class="story-record-date">${fatRecords.length} 筆紀錄</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  // 6. 關鍵轉折點
+  if (turningPoints.gain.length > 0 || turningPoints.loss.length > 0) {
+    html += `<div class="story-chart-title" style="margin: 24px 0 12px; padding: 0 4px;">關鍵轉折點</div>`;
+    if (turningPoints.gain.length > 0) {
+      const gain = turningPoints.gain[0];
+      html += `
+        <div class="story-insight">
+          <div class="story-insight-title">⬆ 變胖最快的時期</div>
+          <div class="story-insight-content">
+            <strong>${gain.date}</strong> 前後 90 天內，體重增加了 <strong>${gain.change.toFixed(1)} kg</strong>。
+            ${gain.change >= 8 ? '可能是生活有大變化（疫情、工作、情緒）造成的。' : '這是身體對某段時期的反應。'}
+          </div>
+        </div>
+      `;
+    }
+    if (turningPoints.loss.length > 0) {
+      const loss = turningPoints.loss[0];
+      html += `
+        <div class="story-insight">
+          <div class="story-insight-title">⬇ 變瘦最快的時期</div>
+          <div class="story-insight-content">
+            <strong>${loss.date}</strong> 前後 90 天內，體重下降了 <strong>${Math.abs(loss.change).toFixed(1)} kg</strong>。
+            這證明你身體曾經做到過，可以回想那段時期的生活狀態。
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  // 7. 溫柔的結語
+  const homePct = distribution.find(d => d.isHome)?.pct || 0;
+  html += `
+    <div class="story-insight" style="background: linear-gradient(135deg, var(--rose-soft), var(--sage-bg)); margin-top: 16px;">
+      <div class="story-insight-title">💌 給你的小提醒</div>
+      <div class="story-insight-content">
+        你的身體中位數是 <strong>${median} kg</strong>，<strong>${homePct.toFixed(0)}%</strong> 的時間都停留在 ${homeRange[0]}-${homeRange[1]} kg。<br><br>
+        這代表你的身體有自己「熟悉的位置」。<br>
+        不用急著改變，慢慢回來就好。 🌿
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+// 計算中位數
+function calcMedian(arr) {
+  const sorted = [...arr].sort((a,b) => a-b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : +((sorted[mid-1] + sorted[mid]) / 2).toFixed(1);
+}
+
+// 找「家鄉範圍」：找出佔最多天數的 2kg 區間
+function findHomeRange(weights) {
+  const min = Math.floor(Math.min(...weights));
+  const max = Math.ceil(Math.max(...weights));
+  let best = { low: 0, count: 0 };
+  for (let low = min; low <= max - 2; low++) {
+    const count = weights.filter(w => w >= low && w < low + 2).length;
+    if (count > best.count) best = { low, count };
+  }
+  return [best.low, best.low + 2];
+}
+
+// 各年平均
+function calcYearlyStats(records) {
+  const byYear = {};
+  records.forEach(r => {
+    const y = r.date.slice(0, 4);
+    if (!byYear[y]) byYear[y] = [];
+    byYear[y].push(r.weight);
+  });
+  return Object.entries(byYear).map(([year, ws]) => ({
+    year,
+    avg: +(ws.reduce((a,b) => a+b, 0) / ws.length).toFixed(1),
+    count: ws.length
+  })).sort((a,b) => a.year.localeCompare(b.year));
+}
+
+// 體重區間分布
+function calcDistribution(weights, homeRange) {
+  const min = Math.floor(Math.min(...weights));
+  const max = Math.ceil(Math.max(...weights));
+  // 用 2kg 區間
+  const ranges = [];
+  for (let low = min; low < max; low += 2) {
+    const count = weights.filter(w => w >= low && w < low + 2).length;
+    if (count > 0) {
+      ranges.push({
+        range: `${low}-${low+2} kg`,
+        count,
+        pct: (count / weights.length) * 100,
+        isHome: low === homeRange[0]
+      });
+    }
+  }
+  return ranges;
+}
+
+// 關鍵轉折點：90 天內變化大的時期
+function findTurningPoints(records) {
+  // 90 天滾動差異
+  const changes = [];
+  for (let i = 90; i < records.length; i++) {
+    const cur = records[i];
+    const past = records[i - 90];
+    const daysDiff = (new Date(cur.date) - new Date(past.date)) / 86400000;
+    // 只看 80-120 天範圍的對比（避免資料稀疏時誤判）
+    if (daysDiff >= 70 && daysDiff <= 130) {
+      changes.push({
+        date: cur.date,
+        weight: cur.weight,
+        change: cur.weight - past.weight
+      });
+    }
+  }
+  const gain = changes.filter(c => c.change > 3).sort((a,b) => b.change - a.change);
+  const loss = changes.filter(c => c.change < -3).sort((a,b) => a.change - b.change);
+  return { gain, loss };
+}
+
+// 畫出時間軸圖
+function renderStoryChart(records, homeRange) {
+  const W = 320, H = 180, padL = 28, padR = 12, padT = 16, padB = 24;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const weights = records.map(r => r.weight);
+  const minW = Math.min(...weights) - 1;
+  const maxW = Math.max(...weights) + 1;
+  const rangeW = maxW - minW || 1;
+
+  const firstDate = new Date(records[0].date);
+  const lastDate = new Date(records[records.length - 1].date);
+  const totalMs = lastDate - firstDate || 1;
+
+  const xOf = (date) => padL + (new Date(date) - firstDate) / totalMs * innerW;
+  const yOf = (w) => padT + (1 - (w - minW) / rangeW) * innerH;
+
+  // 30 天滾動平均
+  const smooth = [];
+  for (let i = 0; i < records.length; i++) {
+    const start = Math.max(0, i - 30);
+    const slice = records.slice(start, i + 1);
+    const avg = slice.reduce((s, r) => s + r.weight, 0) / slice.length;
+    smooth.push({ date: records[i].date, weight: avg });
+  }
+
+  // 家鄉範圍區塊
+  const homeY1 = yOf(homeRange[1]);
+  const homeY2 = yOf(homeRange[0]);
+
+  // y 軸刻度
+  const yTicks = [];
+  const step = rangeW > 10 ? 2 : 1;
+  for (let v = Math.ceil(minW); v <= maxW; v += step) {
+    yTicks.push(v);
+  }
+
+  // x 軸刻度（年份）
+  const xTicks = [];
+  const startYear = firstDate.getFullYear();
+  const endYear = lastDate.getFullYear();
+  for (let y = startYear; y <= endYear; y++) {
+    xTicks.push(y);
+  }
+
+  // 路徑
+  const smoothPath = smooth.map((p, i) =>
+    (i === 0 ? 'M' : 'L') + xOf(p.date).toFixed(1) + ',' + yOf(p.weight).toFixed(1)
+  ).join(' ');
+
+  return `
+    <svg class="story-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <!-- 家鄉範圍 -->
+      <rect x="${padL}" y="${homeY1.toFixed(1)}" width="${innerW}" height="${(homeY2 - homeY1).toFixed(1)}"
+        fill="rgba(168, 184, 154, 0.18)"/>
+      <!-- y 軸刻度 -->
+      ${yTicks.map(v => `
+        <line x1="${padL}" y1="${yOf(v).toFixed(1)}" x2="${W - padR}" y2="${yOf(v).toFixed(1)}"
+          stroke="#EDE8DF" stroke-width="0.5"/>
+        <text x="${padL - 4}" y="${(yOf(v) + 3).toFixed(1)}" text-anchor="end"
+          font-size="8" fill="#9A9389" font-family="sans-serif">${v}</text>
+      `).join('')}
+      <!-- x 軸標籤 -->
+      ${xTicks.filter((_, i) => xTicks.length <= 8 || i % Math.ceil(xTicks.length / 7) === 0).map(y => {
+        const x = xOf(new Date(y + '-06-15'));
+        if (x < padL || x > W - padR) return '';
+        return `<text x="${x.toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="9" fill="#9A9389" font-family="sans-serif">${y}</text>`;
+      }).join('')}
+      <!-- 原始資料點 -->
+      ${records.map(r => `<circle cx="${xOf(r.date).toFixed(1)}" cy="${yOf(r.weight).toFixed(1)}" r="1.5" fill="#A8B89A" opacity="0.45"/>`).join('')}
+      <!-- 滾動平均線 -->
+      <path d="${smoothPath}" fill="none" stroke="#7A8B6F" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+  `;
 }
 
 // 切換身體地圖收合
