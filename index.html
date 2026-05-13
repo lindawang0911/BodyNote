@@ -1524,6 +1524,7 @@ input[type="range"]::-moz-range-thumb {
       <div class="recovery-bar-fill" id="recovery-bar" style="width: 0%"></div>
     </div>
     <div class="recovery-advice" id="recovery-advice">填寫今日狀態後會出現恢復建議</div>
+    <button id="recovery-fill-btn" onclick="switchTab('record')" style="display:none; margin-top: 12px; background: var(--sage-deep); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-family: var(--serif); font-style: italic; font-size: 13px; cursor: pointer;">填寫今日狀態 →</button>
   </div>
 
   <!-- Alerts -->
@@ -1693,21 +1694,24 @@ input[type="range"]::-moz-range-thumb {
       <span class="slider-label">睡眠時間</span>
       <span class="slider-value"><span id="r-sleep-val">7</span> 小時</span>
     </div>
-    <input type="range" id="r-sleep" min="0" max="12" step="0.5" value="7" oninput="document.getElementById('r-sleep-val').textContent=this.value">
+    <input type="range" id="r-sleep" min="0" max="12" step="0.5" value="7" data-dirty="false"
+      oninput="markSliderDirty('r-sleep'); document.getElementById('r-sleep-val').textContent=this.value;">
   </div>
   <div class="slider-group">
     <div class="slider-head">
       <span class="slider-label">疲勞程度</span>
       <span class="slider-value"><span id="r-fatigue-val">5</span> / 10</span>
     </div>
-    <input type="range" id="r-fatigue" min="1" max="10" value="5" oninput="document.getElementById('r-fatigue-val').textContent=this.value">
+    <input type="range" id="r-fatigue" min="1" max="10" value="5" data-dirty="false"
+      oninput="markSliderDirty('r-fatigue'); document.getElementById('r-fatigue-val').textContent=this.value;">
   </div>
   <div class="slider-group">
     <div class="slider-head">
       <span class="slider-label">壓力程度</span>
       <span class="slider-value"><span id="r-stress-val">5</span> / 10</span>
     </div>
-    <input type="range" id="r-stress" min="1" max="10" value="5" oninput="document.getElementById('r-stress-val').textContent=this.value">
+    <input type="range" id="r-stress" min="1" max="10" value="5" data-dirty="false"
+      oninput="markSliderDirty('r-stress'); document.getElementById('r-stress-val').textContent=this.value;">
   </div>
 
   <div class="form-group" style="margin-top: 12px;">
@@ -2508,7 +2512,8 @@ async function doSignup() {
     date: today,
     weight, height,
     bmi: +(weight / Math.pow(height/100, 2)).toFixed(1),
-    sleep: 7, fatigue: 5, stress: 5, menstrual: 'none', mood: 'okay'
+    menstrual: 'none', mood: 'okay'
+    // 不帶 sleep/fatigue/stress，留 null 代表「未填寫」
   });
 
   await loadUserData(session.user);
@@ -2694,6 +2699,7 @@ function switchTab(tab) {
   window.scrollTo(0, 0);
   // FAB 只在運動頁顯示
   document.getElementById('fab-add-video').classList.toggle('show', tab === 'workout');
+  if (tab === 'record') preloadTodayStatus();
   if (tab === 'workout') renderWorkout();
   if (tab === 'trends') renderTrends();
   if (tab === 'me') renderMe();
@@ -2748,6 +2754,42 @@ function fmtDate(key) {
   return `${m}/${d}`;
 }
 
+// 標記滑桿被使用者動過（用於分辨「真的填了」vs「沒動過預設值」）
+function markSliderDirty(id) {
+  const el = document.getElementById(id);
+  if (el) el.dataset.dirty = 'true';
+}
+function isSliderDirty(id) {
+  const el = document.getElementById(id);
+  return el && el.dataset.dirty === 'true';
+}
+function resetSlidersDirty() {
+  ['r-sleep','r-fatigue','r-stress'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.dataset.dirty = 'false';
+  });
+}
+// 當紀錄頁打開時，如果今天已經有紀錄，把已存的值載入到滑桿並標 dirty
+function preloadTodayStatus() {
+  const today = todayKey();
+  const rec = state.records.find(r => r.date === today);
+  if (!rec) return;
+  if (rec.sleep !== null && rec.sleep !== undefined) {
+    const el = document.getElementById('r-sleep');
+    if (el) { el.value = rec.sleep; el.dataset.dirty = 'true'; document.getElementById('r-sleep-val').textContent = rec.sleep; }
+  }
+  if (rec.fatigue !== null && rec.fatigue !== undefined) {
+    const el = document.getElementById('r-fatigue');
+    if (el) { el.value = rec.fatigue; el.dataset.dirty = 'true'; document.getElementById('r-fatigue-val').textContent = rec.fatigue; }
+  }
+  if (rec.stress !== null && rec.stress !== undefined) {
+    const el = document.getElementById('r-stress');
+    if (el) { el.value = rec.stress; el.dataset.dirty = 'true'; document.getElementById('r-stress-val').textContent = rec.stress; }
+  }
+  if (rec.menstrual) setChipValue('chips-menstrual', rec.menstrual);
+  if (rec.mood) setChipValue('chips-mood', rec.mood);
+}
+
 // ========== RECORD ==========
 async function saveRecord() {
   if (!state.user) return;
@@ -2756,13 +2798,15 @@ async function saveRecord() {
     user_id: state.user.id,
     date: todayKey(),
     height: state.user.height,
-    sleep: parseFloat(document.getElementById('r-sleep').value),
-    fatigue: parseInt(document.getElementById('r-fatigue').value),
-    stress: parseInt(document.getElementById('r-stress').value),
     menstrual: getChipValue('chips-menstrual'),
     mood: getChipValue('chips-mood'),
     note: document.getElementById('r-note').value.trim() || null
   };
+  // 只有「滑桿被動過」才寫入，沒動就送 null（代表未填）
+  record.sleep = isSliderDirty('r-sleep') ? parseFloat(document.getElementById('r-sleep').value) : null;
+  record.fatigue = isSliderDirty('r-fatigue') ? parseInt(document.getElementById('r-fatigue').value) : null;
+  record.stress = isSliderDirty('r-stress') ? parseInt(document.getElementById('r-stress').value) : null;
+
   fields.forEach(f => {
     const el = document.getElementById('r-' + f);
     if (el) {
@@ -2797,6 +2841,7 @@ async function saveRecord() {
     if (el) el.value = '';
   });
   document.getElementById('r-note').value = '';
+  resetSlidersDirty();
   renderAll();
   switchTab('home');
 }
@@ -2829,13 +2874,23 @@ function renderHome() {
   }
 
   // Recovery
-  const score = calcRecovery(latest);
-  document.getElementById('recovery-score').textContent = score;
-  document.getElementById('recovery-bar').style.width = score + '%';
-  document.getElementById('recovery-advice').innerHTML = recoveryAdvice(score, latest);
+  const score = calcRecovery();
+  const scoreEl = document.getElementById('recovery-score');
+  const barEl = document.getElementById('recovery-bar');
+  const fillBtn = document.getElementById('recovery-fill-btn');
+  if (score === null) {
+    scoreEl.textContent = '—';
+    barEl.style.width = '0%';
+    if (fillBtn) fillBtn.style.display = 'inline-block';
+  } else {
+    scoreEl.textContent = score;
+    barEl.style.width = score + '%';
+    if (fillBtn) fillBtn.style.display = 'none';
+  }
+  document.getElementById('recovery-advice').innerHTML = recoveryAdvice(score);
 
   // Alerts
-  renderAlerts(latest);
+  renderAlerts();
 
   // Today's workout
   renderTodayWorkout();
@@ -2866,19 +2921,35 @@ function setMetric(id, val, prev, unit) {
 }
 
 // ========== RECOVERY SCORE ==========
-function calcRecovery(r) {
-  if (!r) return '—';
+// Recovery Score 只看「今天」這一筆，且必須真的填過至少一個狀態欄位
+function calcRecovery() {
+  const today = todayKey();
+  const r = state.records.find(x => x.date === today);
+  // 1. 今天沒紀錄 → null
+  if (!r) return null;
+  // 2. 三個關鍵狀態都沒填 → null
+  const hasSleep = r.sleep !== null && r.sleep !== undefined;
+  const hasFatigue = r.fatigue !== null && r.fatigue !== undefined;
+  const hasStress = r.stress !== null && r.stress !== undefined;
+  if (!hasSleep && !hasFatigue && !hasStress) return null;
+
   let score = 100;
   // sleep
-  if (r.sleep < 6) score -= 20;
-  else if (r.sleep < 7) score -= 10;
-  else if (r.sleep >= 7.5) score += 5;
+  if (hasSleep) {
+    if (r.sleep < 6) score -= 20;
+    else if (r.sleep < 7) score -= 10;
+    else if (r.sleep >= 7.5) score += 5;
+  }
   // fatigue
-  if (r.fatigue >= 8) score -= 15;
-  else if (r.fatigue >= 6) score -= 8;
+  if (hasFatigue) {
+    if (r.fatigue >= 8) score -= 15;
+    else if (r.fatigue >= 6) score -= 8;
+  }
   // stress
-  if (r.stress >= 8) score -= 15;
-  else if (r.stress >= 6) score -= 8;
+  if (hasStress) {
+    if (r.stress >= 8) score -= 15;
+    else if (r.stress >= 6) score -= 8;
+  }
   // menstrual
   if (r.menstrual === 'pre') score -= 10;
   else if (r.menstrual === 'during') score -= 15;
@@ -2899,8 +2970,10 @@ function isYesterday(dateStr) {
   return dateStr === `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function recoveryAdvice(score, r) {
-  if (score === '—') return '填寫今日紀錄後，會出現專屬建議';
+function recoveryAdvice(score) {
+  if (score === null) {
+    return '請到「<strong>紀錄</strong>」頁面填寫今日的睡眠、疲勞、壓力，會出現專屬恢復建議';
+  }
   if (score >= 80) return `<strong>狀態很好</strong>，今天可以挑戰高強度（HIIT、INSANITY 等）。但別忘了暖身，量力而為。`;
   if (score >= 60) return `<strong>中等恢復</strong>，適合中強度訓練（重訓、有氧 30-45 分鐘）。聽身體的聲音。`;
   if (score >= 40) return `<strong>身體需要溫柔</strong>，建議低強度（瑜伽、伸展、散步 15-30 分鐘）。今天不適合 HIIT。`;
@@ -2908,15 +2981,26 @@ function recoveryAdvice(score, r) {
 }
 
 // ========== ALERTS ==========
-function renderAlerts(r) {
+function renderAlerts() {
   const container = document.getElementById('alerts-container');
   container.innerHTML = '';
+  const today = todayKey();
+  const r = state.records.find(x => x.date === today);
   if (!r) return;
   const alerts = [];
-  if (r.sleep < 6) alerts.push('昨晚睡眠少於 6 小時，今天可以的話，午餐後找 10 分鐘閉眼休息。');
-  if (r.fatigue >= 8) alerts.push('疲勞指數偏高，今天的運動可以改成伸展或散步，把恢復放第一。');
-  if (r.stress >= 8) alerts.push('壓力指數偏高，記得在工作空檔深呼吸三次，或喝杯溫水。');
-  if (r.menstrual === 'pre' || r.menstrual === 'during') alerts.push('生理期附近，身體比較敏感，請降低運動強度，多補充鐵質。');
+  // 只在有實際填寫的情況下檢查
+  if (r.sleep !== null && r.sleep !== undefined && r.sleep < 6) {
+    alerts.push('昨晚睡眠少於 6 小時，今天可以的話，午餐後找 10 分鐘閉眼休息。');
+  }
+  if (r.fatigue !== null && r.fatigue !== undefined && r.fatigue >= 8) {
+    alerts.push('疲勞指數偏高，今天的運動可以改成伸展或散步，把恢復放第一。');
+  }
+  if (r.stress !== null && r.stress !== undefined && r.stress >= 8) {
+    alerts.push('壓力指數偏高，記得在工作空檔深呼吸三次，或喝杯溫水。');
+  }
+  if (r.menstrual === 'pre' || r.menstrual === 'during') {
+    alerts.push('生理期附近，身體比較敏感，請降低運動強度，多補充鐵質。');
+  }
 
   // 連續高強度檢查
   const recent = [...state.logs].filter(l => l.intensity === 'high').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,2);
@@ -2965,7 +3049,8 @@ async function saveField() {
     [state.currentField]: val
   };
   if (!rec) {
-    Object.assign(patch, { sleep: 7, fatigue: 5, stress: 5, menstrual: 'none', mood: 'okay' });
+    Object.assign(patch, { menstrual: 'none', mood: 'okay' });
+    // sleep/fatigue/stress 留 null
   }
   const { data, error } = await sb.from('body_records')
     .upsert(patch, { onConflict: 'user_id,date' })
@@ -3076,10 +3161,16 @@ function renderWorkout() {
 
   // Suggestions
   const sugg = document.getElementById('workout-suggestions');
-  const latest = [...state.records].sort((a,b)=>b.date.localeCompare(a.date))[0];
-  const score = calcRecovery(latest);
+  const score = calcRecovery();
   let suggestions = [];
-  if (score === '—' || score >= 80) {
+  if (score === null) {
+    // 沒填今日狀態 → 推薦溫和選項 + 提示
+    suggestions = [
+      {name:'先到「紀錄」填今日狀態', type:'rest', duration:0, url:''},
+      {name:'晨間瑜伽流 (10 分)', type:'yoga', duration:10, url:'https://www.youtube.com/results?search_query=晨間瑜伽'},
+      {name:'恢復伸展 10 分', type:'stretch', duration:10, url:'https://www.youtube.com/results?search_query=恢復伸展'}
+    ];
+  } else if (score >= 80) {
     suggestions = [
       {name:'低衝擊有氧 (晨間版)', type:'cardio', duration:15, url:'https://www.youtube.com/results?search_query=低衝擊有氧'},
       {name:'快走 20 分', type:'walk', duration:20, url:''},
