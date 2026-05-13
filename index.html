@@ -157,6 +157,210 @@ html, body {
   position: relative;
   overflow: hidden;
 }
+
+/* Phase card */
+.phase-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--sage);
+  transition: border-color 0.3s;
+}
+.phase-card.repair { border-left-color: var(--rose); }
+.phase-card.rebuild { border-left-color: var(--amber); }
+.phase-card.stable { border-left-color: var(--sage-deep); }
+.phase-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.phase-emoji {
+  font-size: 32px;
+  line-height: 1;
+}
+.phase-title {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-style: italic;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.phase-sub {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.phase-progress {
+  margin-top: 12px;
+}
+.phase-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-bottom: 6px;
+}
+.phase-progress-bar {
+  height: 5px;
+  background: var(--line-soft);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.phase-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage), var(--sage-deep));
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.phase-checklist {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.phase-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.phase-check-icon {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.phase-check.done .phase-check-icon {
+  background: var(--sage-bg);
+  color: var(--sage-deep);
+}
+.phase-check.pending .phase-check-icon {
+  background: var(--bg-soft);
+  color: var(--ink-mute);
+}
+.phase-check.done { color: var(--ink); }
+.phase-unlock-badge {
+  display: inline-block;
+  background: var(--sage-bg);
+  color: var(--sage-deep);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 6px;
+  font-family: var(--sans);
+}
+
+/* Bowel quick record */
+.bowel-quick {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.bowel-quick-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.bowel-quick-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.bowel-quick-sub {
+  font-size: 11px;
+  color: var(--ink-mute);
+}
+.bowel-quick-status {
+  font-size: 11px;
+  color: var(--sage-deep);
+  background: var(--sage-bg);
+  padding: 3px 10px;
+  border-radius: 10px;
+  display: none;
+}
+.bowel-quick-status.show { display: inline-block; }
+.bowel-types {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.bowel-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  background: var(--bg-soft);
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: all 0.2s;
+}
+.bowel-btn:active { transform: scale(0.95); }
+.bowel-btn.active {
+  background: var(--sage-bg);
+  border-color: var(--sage);
+}
+.bowel-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+.bowel-label {
+  font-size: 10px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+.bowel-btn.active .bowel-label {
+  color: var(--sage-deep);
+  font-weight: 500;
+}
+
+/* Bowel insight cards */
+.bowel-insight {
+  background: linear-gradient(135deg, var(--sage-bg), var(--rose-soft));
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.bowel-insight-icon {
+  position: absolute;
+  top: 14px; right: 14px;
+  font-size: 20px;
+  opacity: 0.6;
+}
+.bowel-insight-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--sage-deep);
+  margin-bottom: 8px;
+}
+.bowel-insight-content {
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.7;
+}
+.bowel-insight-content strong { color: var(--sage-deep); font-weight: 500; }
+
+/* Bowel chips for history */
+.record-chip.bowel { background: #F0E8DC; color: #8B7355; }
+.record-chip.bowel strong { color: #8B7355; }
+.record-chip.bowel.warning { background: var(--amber-soft); color: #B07050; }
+.record-chip.bowel.warning strong { color: #B07050; }
 .recovery::before {
   content: '';
   position: absolute;
@@ -1527,6 +1731,67 @@ input[type="range"]::-moz-range-thumb {
     <button id="recovery-fill-btn" onclick="switchTab('record')" style="display:none; margin-top: 12px; background: var(--sage-deep); color: white; border: none; padding: 10px 18px; border-radius: 20px; font-family: var(--serif); font-style: italic; font-size: 13px; cursor: pointer;">填寫今日狀態 →</button>
   </div>
 
+  <!-- Phase card -->
+  <div class="phase-card" id="phase-card">
+    <div class="phase-head">
+      <div class="phase-emoji" id="phase-emoji">🌱</div>
+      <div>
+        <div class="phase-title" id="phase-title">修復期</div>
+        <div class="phase-sub" id="phase-sub">身體狀態評估中...</div>
+      </div>
+    </div>
+    <div class="phase-progress" id="phase-progress" style="display:none;">
+      <div class="phase-progress-label">
+        <span id="phase-progress-text">進度</span>
+        <span id="phase-progress-count">0 / 7</span>
+      </div>
+      <div class="phase-progress-bar">
+        <div class="phase-progress-fill" id="phase-progress-fill" style="width: 0%"></div>
+      </div>
+    </div>
+    <div class="phase-checklist" id="phase-checklist" style="display:none;"></div>
+  </div>
+
+  <!-- 今日腸胃一鍵記 -->
+  <div class="bowel-quick" id="bowel-quick">
+    <div class="bowel-quick-head">
+      <div>
+        <div class="bowel-quick-title">今日腸胃</div>
+        <div class="bowel-quick-sub" id="bowel-quick-sub">點下方圖示快速紀錄今天</div>
+      </div>
+      <div class="bowel-quick-status" id="bowel-quick-status"></div>
+    </div>
+    <div class="bowel-types">
+      <button class="bowel-btn" data-bt="none" onclick="quickBowel('none')">
+        <span class="bowel-emoji">🚫</span>
+        <span class="bowel-label">沒去</span>
+      </button>
+      <button class="bowel-btn" data-bt="constipation" onclick="quickBowel('constipation')">
+        <span class="bowel-emoji">🪨</span>
+        <span class="bowel-label">硬塊</span>
+      </button>
+      <button class="bowel-btn" data-bt="hard" onclick="quickBowel('hard')">
+        <span class="bowel-emoji">🌰</span>
+        <span class="bowel-label">偏硬</span>
+      </button>
+      <button class="bowel-btn" data-bt="normal" onclick="quickBowel('normal')">
+        <span class="bowel-emoji">🌿</span>
+        <span class="bowel-label">正常</span>
+      </button>
+      <button class="bowel-btn" data-bt="soft" onclick="quickBowel('soft')">
+        <span class="bowel-emoji">💧</span>
+        <span class="bowel-label">偏軟</span>
+      </button>
+      <button class="bowel-btn" data-bt="diarrhea" onclick="quickBowel('diarrhea')">
+        <span class="bowel-emoji">🌊</span>
+        <span class="bowel-label">拉肚子</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bowel insight (智能關聯分析) -->
+  <div id="bowel-insight-container"></div>
+
   <!-- Alerts -->
   <div id="alerts-container"></div>
 
@@ -1735,6 +2000,37 @@ input[type="range"]::-moz-range-thumb {
     </div>
   </div>
 
+  <div class="section-title" style="margin: 20px 0 12px;">腸胃狀況</div>
+  <div class="form-group">
+    <label class="form-label">今天排便狀況</label>
+    <div class="chips" id="chips-bowel-type">
+      <div class="chip" data-val="none">🚫 沒去</div>
+      <div class="chip" data-val="constipation">🪨 硬塊</div>
+      <div class="chip" data-val="hard">🌰 偏硬</div>
+      <div class="chip" data-val="normal">🌿 正常</div>
+      <div class="chip" data-val="soft">💧 偏軟</div>
+      <div class="chip" data-val="diarrhea">🌊 拉肚子</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">次數</label>
+    <div class="chips" id="chips-bowel-count">
+      <div class="chip" data-val="0">0 次</div>
+      <div class="chip" data-val="1">1 次</div>
+      <div class="chip" data-val="2">2 次</div>
+      <div class="chip" data-val="3">3 次以上</div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">腹部感覺（選填）</label>
+    <div class="chips" id="chips-abdomen">
+      <div class="chip" data-val="comfortable">😌 舒服</div>
+      <div class="chip" data-val="bloating">🎈 脹氣</div>
+      <div class="chip" data-val="cramping">😣 絞痛</div>
+      <div class="chip" data-val="unwell">😔 不適</div>
+    </div>
+  </div>
+
   <div class="form-group">
     <label class="form-label">今日備註</label>
     <textarea class="form-textarea" id="r-note" placeholder="今天身體有什麼感覺？"></textarea>
@@ -1908,6 +2204,7 @@ input[type="range"]::-moz-range-thumb {
       <button class="chip active" onclick="askAI('trend')">分析最近趨勢</button>
       <button class="chip active" onclick="askAI('recovery')">恢復狀況如何？</button>
       <button class="chip active" onclick="askAI('menstrual')">生理期前後建議</button>
+      <button class="chip active" onclick="askAI('bowel')">腸胃狀況分析</button>
     </div>
 
     <div class="form-group">
@@ -2320,6 +2617,32 @@ input[type="range"]::-moz-range-thumb {
       <div class="form-group">
         <label class="form-label">壓力 (1-10)</label>
         <input type="number" class="form-input" id="edit-stress" min="1" max="10">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">排便狀況</label>
+        <select class="form-select" id="edit-bowel_type">
+          <option value="">(未填)</option>
+          <option value="none">🚫 沒去</option>
+          <option value="constipation">🪨 硬塊</option>
+          <option value="hard">🌰 偏硬</option>
+          <option value="normal">🌿 正常</option>
+          <option value="soft">💧 偏軟</option>
+          <option value="diarrhea">🌊 拉肚子</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">排便次數</label>
+        <input type="number" class="form-input" id="edit-bowel_count" min="0" max="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label">腹部感覺</label>
+        <select class="form-select" id="edit-abdomen_feel">
+          <option value="">(未填)</option>
+          <option value="comfortable">😌 舒服</option>
+          <option value="bloating">🎈 脹氣</option>
+          <option value="cramping">😣 絞痛</option>
+          <option value="unwell">😔 不適</option>
+        </select>
       </div>
       <div class="form-group full">
         <label class="form-label">備註</label>
@@ -2788,6 +3111,164 @@ function preloadTodayStatus() {
   }
   if (rec.menstrual) setChipValue('chips-menstrual', rec.menstrual);
   if (rec.mood) setChipValue('chips-mood', rec.mood);
+  // 腸胃
+  if (rec.bowel_type) setChipValue('chips-bowel-type', rec.bowel_type);
+  else document.querySelectorAll('#chips-bowel-type .chip').forEach(c => c.classList.remove('active'));
+  if (rec.bowel_count !== null && rec.bowel_count !== undefined) setChipValue('chips-bowel-count', String(rec.bowel_count));
+  else document.querySelectorAll('#chips-bowel-count .chip').forEach(c => c.classList.remove('active'));
+  if (rec.abdomen_feel) setChipValue('chips-abdomen', rec.abdomen_feel);
+  else document.querySelectorAll('#chips-abdomen .chip').forEach(c => c.classList.remove('active'));
+}
+
+// 首頁一鍵紀錄腸胃
+async function quickBowel(type) {
+  if (!state.user) return;
+  const today = todayKey();
+  let rec = state.records.find(r => r.date === today);
+  // 自動設次數：沒去 = 0，其他預設 1
+  const count = type === 'none' ? 0 : 1;
+  const patch = {
+    user_id: state.user.id,
+    date: today,
+    height: state.user.height,
+    bowel_type: type,
+    bowel_count: count
+  };
+  const { data, error } = await sb.from('body_records')
+    .upsert(patch, { onConflict: 'user_id,date' })
+    .select()
+    .single();
+  if (error) { toast('儲存失敗：' + error.message); return; }
+  const idx = state.records.findIndex(r => r.date === today);
+  if (idx >= 0) state.records[idx] = data;
+  else state.records.push(data);
+  toast('已紀錄 ✓');
+  renderBowelQuick();
+  renderBowelInsight();
+  renderHistory();
+}
+
+// 更新首頁腸胃快速紀錄區的狀態
+function renderBowelQuick() {
+  const today = todayKey();
+  const rec = state.records.find(r => r.date === today);
+  document.querySelectorAll('.bowel-btn').forEach(b => b.classList.remove('active'));
+  const status = document.getElementById('bowel-quick-status');
+  const sub = document.getElementById('bowel-quick-sub');
+  if (rec && rec.bowel_type) {
+    const btn = document.querySelector(`.bowel-btn[data-bt="${rec.bowel_type}"]`);
+    if (btn) btn.classList.add('active');
+    const labels = {none:'沒去', constipation:'硬塊', hard:'偏硬', normal:'正常', soft:'偏軟', diarrhea:'拉肚子'};
+    status.textContent = '✓ 已紀錄：' + labels[rec.bowel_type];
+    status.classList.add('show');
+    sub.textContent = '想修改？再點一次就好';
+  } else {
+    status.classList.remove('show');
+    sub.textContent = '點下方圖示快速紀錄今天';
+  }
+}
+
+// 智能關聯分析（找出腸胃跟壓力、睡眠的關聯）
+function analyzeBowelPatterns() {
+  // 取最近 30 天有腸胃紀錄的
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+  cutoff.setHours(0, 0, 0, 0);
+  const records = state.records
+    .filter(r => new Date(r.date) >= cutoff && r.bowel_type)
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  if (records.length < 5) return null;
+
+  const insights = [];
+
+  // 1. 拉肚子相關
+  const diarrheaRecs = records.filter(r => r.bowel_type === 'diarrhea' || r.bowel_type === 'soft');
+  if (diarrheaRecs.length >= 2) {
+    // 看這些日子的「前一天」壓力
+    const prevDayStress = [];
+    diarrheaRecs.forEach(r => {
+      const d = new Date(r.date);
+      d.setDate(d.getDate() - 1);
+      const prevDate = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const prev = state.records.find(x => x.date === prevDate);
+      if (prev && prev.stress !== null && prev.stress !== undefined) prevDayStress.push(prev.stress);
+    });
+    if (prevDayStress.length >= 2) {
+      const avg = (prevDayStress.reduce((a,b)=>a+b,0) / prevDayStress.length).toFixed(1);
+      if (parseFloat(avg) >= 6) {
+        insights.push({
+          icon: '💧',
+          title: '腸胃 × 壓力 關聯',
+          content: `<strong>偏軟/拉肚子的日子</strong>，前一天壓力平均 <strong>${avg} 分</strong>。壓力高的時候可以提前留意飲食。`
+        });
+      }
+    }
+  }
+
+  // 2. 便秘相關
+  const constipRecs = records.filter(r => r.bowel_type === 'constipation' || r.bowel_type === 'hard' || r.bowel_type === 'none');
+  if (constipRecs.length >= 3) {
+    // 看睡眠平均
+    const sleepVals = constipRecs.map(r => r.sleep).filter(s => s !== null && s !== undefined);
+    if (sleepVals.length >= 2) {
+      const avgSleep = (sleepVals.reduce((a,b)=>a+b,0) / sleepVals.length).toFixed(1);
+      if (parseFloat(avgSleep) < 7) {
+        insights.push({
+          icon: '🌙',
+          title: '腸胃 × 睡眠 關聯',
+          content: `<strong>排便不順的日子</strong>，睡眠平均 <strong>${avgSleep} 小時</strong>。睡得少身體會緊繃，腸道也不例外。`
+        });
+      }
+    }
+  }
+
+  // 3. 生理期前後
+  const periodBowel = records.filter(r => (r.menstrual === 'pre' || r.menstrual === 'during')
+    && r.bowel_type && r.bowel_type !== 'normal');
+  if (periodBowel.length >= 2) {
+    insights.push({
+      icon: '🌸',
+      title: '腸胃 × 生理期 關聯',
+      content: `你在<strong>生理期前後</strong>容易腸胃不順，這是正常的荷爾蒙反應。生理期前一週可以多補充膳食纖維與溫熱食物。`
+    });
+  }
+
+  // 4. 30 天統計
+  const stats = { normal:0, abnormal:0, none:0 };
+  records.forEach(r => {
+    if (r.bowel_type === 'normal') stats.normal++;
+    else if (r.bowel_type === 'none') stats.none++;
+    else stats.abnormal++;
+  });
+  if (records.length >= 7) {
+    const normalPct = Math.round((stats.normal / records.length) * 100);
+    insights.push({
+      icon: '📊',
+      title: '最近 30 天統計',
+      content: `已紀錄 ${records.length} 天 · <strong>正常 ${stats.normal} 天 (${normalPct}%)</strong>、異常 ${stats.abnormal} 天、沒去 ${stats.none} 天`
+    });
+  }
+
+  return insights;
+}
+
+// 渲染首頁的智能洞察
+function renderBowelInsight() {
+  const container = document.getElementById('bowel-insight-container');
+  if (!container) return;
+  const insights = analyzeBowelPatterns();
+  if (!insights || insights.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  container.innerHTML = insights.map(i => `
+    <div class="bowel-insight">
+      <div class="bowel-insight-icon">${i.icon}</div>
+      <div class="bowel-insight-title">${i.title}</div>
+      <div class="bowel-insight-content">${i.content}</div>
+    </div>
+  `).join('');
 }
 
 // ========== RECORD ==========
@@ -2806,6 +3287,14 @@ async function saveRecord() {
   record.sleep = isSliderDirty('r-sleep') ? parseFloat(document.getElementById('r-sleep').value) : null;
   record.fatigue = isSliderDirty('r-fatigue') ? parseInt(document.getElementById('r-fatigue').value) : null;
   record.stress = isSliderDirty('r-stress') ? parseInt(document.getElementById('r-stress').value) : null;
+
+  // 腸胃欄位
+  const bowelType = getChipValue('chips-bowel-type');
+  if (bowelType) record.bowel_type = bowelType;
+  const bowelCount = getChipValue('chips-bowel-count');
+  if (bowelCount !== null) record.bowel_count = parseInt(bowelCount);
+  const abdomen = getChipValue('chips-abdomen');
+  if (abdomen) record.abdomen_feel = abdomen;
 
   fields.forEach(f => {
     const el = document.getElementById('r-' + f);
@@ -2889,6 +3378,13 @@ function renderHome() {
   }
   document.getElementById('recovery-advice').innerHTML = recoveryAdvice(score);
 
+  // Phase card
+  renderPhaseCard();
+
+  // Bowel quick + insight
+  renderBowelQuick();
+  renderBowelInsight();
+
   // Alerts
   renderAlerts();
 
@@ -2953,6 +3449,10 @@ function calcRecovery() {
   // menstrual
   if (r.menstrual === 'pre') score -= 10;
   else if (r.menstrual === 'during') score -= 15;
+  // 腸胃狀況
+  if (r.bowel_type === 'diarrhea') score -= 15;
+  else if (r.bowel_type === 'soft') score -= 8;
+  if (r.abdomen_feel === 'cramping' || r.abdomen_feel === 'unwell') score -= 8;
   // 最近運動反應
   const recentLog = [...state.logs].sort((a,b)=>b.date.localeCompare(a.date))[0];
   if (recentLog) {
@@ -2974,11 +3474,262 @@ function recoveryAdvice(score) {
   if (score === null) {
     return '請到「<strong>紀錄</strong>」頁面填寫今日的睡眠、疲勞、壓力，會出現專屬恢復建議';
   }
-  if (score >= 80) return `<strong>狀態很好</strong>，今天可以挑戰高強度（HIIT、INSANITY 等）。但別忘了暖身，量力而為。`;
-  if (score >= 60) return `<strong>中等恢復</strong>，適合中強度訓練（重訓、有氧 30-45 分鐘）。聽身體的聲音。`;
-  if (score >= 40) return `<strong>身體需要溫柔</strong>，建議低強度（瑜伽、伸展、散步 15-30 分鐘）。今天不適合 HIIT。`;
-  return `<strong>該休息了</strong>。今天請給身體完整修復——熱水澡、伸展或冥想就好，不要勉強運動。`;
+  // 用智能建議（結合階段判斷）
+  const advice = getSmartWorkoutAdvice();
+  return advice.message;
 }
+
+// ========================================
+// ========== 個人化恢復系統 ==========
+// ========================================
+
+// 取得最近 N 天的紀錄與運動 log
+function getRecentData(days) {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  cutoff.setHours(0, 0, 0, 0);
+  const records = state.records.filter(r => new Date(r.date) >= cutoff);
+  const logs = state.logs.filter(l => new Date(l.date) >= cutoff);
+  return { records, logs };
+}
+
+// 計算一筆紀錄的 Recovery Score（給趨勢分析用，傳入紀錄）
+function calcRecoveryForRecord(r) {
+  const hasSleep = r.sleep !== null && r.sleep !== undefined;
+  const hasFatigue = r.fatigue !== null && r.fatigue !== undefined;
+  const hasStress = r.stress !== null && r.stress !== undefined;
+  if (!hasSleep && !hasFatigue && !hasStress) return null;
+  let score = 100;
+  if (hasSleep) {
+    if (r.sleep < 6) score -= 20;
+    else if (r.sleep < 7) score -= 10;
+    else if (r.sleep >= 7.5) score += 5;
+  }
+  if (hasFatigue) {
+    if (r.fatigue >= 8) score -= 15;
+    else if (r.fatigue >= 6) score -= 8;
+  }
+  if (hasStress) {
+    if (r.stress >= 8) score -= 15;
+    else if (r.stress >= 6) score -= 8;
+  }
+  if (r.menstrual === 'pre') score -= 10;
+  else if (r.menstrual === 'during') score -= 15;
+  if (r.bowel_type === 'diarrhea') score -= 15;
+  else if (r.bowel_type === 'soft') score -= 8;
+  if (r.abdomen_feel === 'cramping' || r.abdomen_feel === 'unwell') score -= 8;
+  return Math.max(0, Math.min(100, score));
+}
+
+// 計算 7 天平均 Recovery
+function calc7DayAvgRecovery() {
+  const { records } = getRecentData(7);
+  const scores = records.map(r => calcRecoveryForRecord(r)).filter(s => s !== null);
+  if (scores.length === 0) return null;
+  return Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+}
+
+// 計算 14 天平均 Recovery
+function calc14DayAvgRecovery() {
+  const { records } = getRecentData(14);
+  const scores = records.map(r => calcRecoveryForRecord(r)).filter(s => s !== null);
+  if (scores.length === 0) return null;
+  return Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+}
+
+// 檢查最近 N 天是否有不良反應
+function hasNegativeReaction(days) {
+  const { logs } = getRecentData(days);
+  return logs.some(l => l.reaction === 'exhausted' || l.reaction === 'getting_sick');
+}
+
+// 計算最近 N 天平均睡眠
+function calcAvgSleep(days) {
+  const { records } = getRecentData(days);
+  const vals = records.map(r => r.sleep).filter(s => s !== null && s !== undefined);
+  if (vals.length === 0) return null;
+  return +(vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1);
+}
+
+// 計算最近 N 天完成的低強度運動次數
+function countLowIntensityWorkouts(days) {
+  const { logs } = getRecentData(days);
+  return logs.filter(l => l.intensity === 'low' || l.intensity === 'medium').length;
+}
+
+// 計算連續無不良反應的天數（從今天往前算）
+function countConsecutiveGoodDays() {
+  // 排序紀錄與 logs，從今天往前看
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let count = 0;
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    // 看這一天有沒有不良反應
+    const logsOfDay = state.logs.filter(l => l.date === dateStr);
+    const hasBad = logsOfDay.some(l => l.reaction === 'exhausted' || l.reaction === 'getting_sick');
+    if (hasBad) break;
+    count++;
+  }
+  return count;
+}
+
+// 判斷恢復階段
+function calcRecoveryPhase() {
+  const hasBadIn14 = hasNegativeReaction(14);
+  const consecGood = countConsecutiveGoodDays();
+  const avg14 = calc14DayAvgRecovery();
+  const avgSleep14 = calcAvgSleep(14);
+
+  // 穩定期條件：連續 14 天無不良 + Recovery 平均 ≥ 70 + 睡眠平均 ≥ 7
+  if (consecGood >= 14 && avg14 !== null && avg14 >= 70 && avgSleep14 !== null && avgSleep14 >= 7) {
+    return { phase: 'stable', emoji: '🌳', title: '穩定期',
+      desc: '身體連續兩週穩定恢復。可以正常做中高強度訓練。',
+      sub: `Recovery 平均 ${avg14} · 睡眠平均 ${avgSleep14} h` };
+  }
+  // 修復期：最近 14 天有不良反應
+  if (hasBadIn14) {
+    return { phase: 'repair', emoji: '🌱', title: '修復期',
+      desc: '身體還在發出訊號，目前以伸展、瑜伽、散步為主。',
+      progressLabel: '距離重建期', progressNow: consecGood, progressTarget: 7,
+      sub: `連續 ${consecGood} 天無不良反應，需累積 7 天進入重建期` };
+  }
+  // 重建期：連續 7-13 天無不良
+  if (consecGood >= 7) {
+    return { phase: 'rebuild', emoji: '🌿', title: '重建期',
+      desc: '身體在恢復中，可以加入低強度有氧、輕度肌力訓練。',
+      progressLabel: '距離穩定期', progressNow: consecGood, progressTarget: 14,
+      sub: `連續 ${consecGood} 天恢復良好，再 ${14 - consecGood} 天進入穩定期` };
+  }
+  // 預設：累積中
+  return { phase: 'repair', emoji: '🌱', title: '修復期',
+    desc: '剛開始累積資料，先以低強度為主、慢慢觀察身體反應。',
+    progressLabel: '距離重建期', progressNow: consecGood, progressTarget: 7,
+    sub: `連續 ${consecGood} 天無不良反應` };
+}
+
+// 檢查 HIIT/INSANITY 是否解鎖
+function checkHIITUnlock() {
+  const avg14 = calc14DayAvgRecovery();
+  const hasBad14 = hasNegativeReaction(14);
+  const avgSleep14 = calcAvgSleep(14);
+  const lowCount14 = countLowIntensityWorkouts(14);
+
+  const checks = [
+    { label: '過去 14 天平均 Recovery ≥ 70', pass: avg14 !== null && avg14 >= 70,
+      value: avg14 !== null ? `目前 ${avg14}` : '資料不足' },
+    { label: '過去 14 天無「快感冒感/太累」反應', pass: !hasBad14,
+      value: hasBad14 ? '有過' : '✓' },
+    { label: '過去 14 天睡眠平均 ≥ 7 小時', pass: avgSleep14 !== null && avgSleep14 >= 7,
+      value: avgSleep14 !== null ? `目前 ${avgSleep14} h` : '資料不足' },
+    { label: '過去 14 天完成 ≥ 5 次低/中強度運動', pass: lowCount14 >= 5,
+      value: `目前 ${lowCount14} 次` }
+  ];
+
+  const unlocked = checks.every(c => c.pass);
+  return { unlocked, checks };
+}
+
+// 渲染恢復階段卡
+function renderPhaseCard() {
+  const phase = calcRecoveryPhase();
+  const card = document.getElementById('phase-card');
+  if (!card) return;
+  card.className = 'phase-card ' + phase.phase;
+  document.getElementById('phase-emoji').textContent = phase.emoji;
+  document.getElementById('phase-title').textContent = phase.title;
+
+  // 在穩定期，顯示 HIIT 解鎖檢查清單
+  if (phase.phase === 'stable') {
+    const unlock = checkHIITUnlock();
+    document.getElementById('phase-sub').innerHTML = phase.desc + (unlock.unlocked
+      ? '<span class="phase-unlock-badge">HIIT 已解鎖 ✨</span>'
+      : '');
+    document.getElementById('phase-progress').style.display = 'none';
+    document.getElementById('phase-checklist').style.display = '';
+    document.getElementById('phase-checklist').innerHTML =
+      '<div style="font-size:11px; color: var(--ink-mute); margin-bottom: 4px;">高強度訓練解鎖條件：</div>' +
+      unlock.checks.map(c => `
+        <div class="phase-check ${c.pass ? 'done' : 'pending'}">
+          <div class="phase-check-icon">${c.pass ? '✓' : '·'}</div>
+          <span>${c.label}（${c.value}）</span>
+        </div>`).join('');
+  } else {
+    document.getElementById('phase-sub').textContent = phase.desc;
+    document.getElementById('phase-checklist').style.display = 'none';
+    // 進度條
+    if (phase.progressTarget) {
+      document.getElementById('phase-progress').style.display = '';
+      document.getElementById('phase-progress-text').textContent = phase.progressLabel;
+      document.getElementById('phase-progress-count').textContent = `${phase.progressNow} / ${phase.progressTarget}`;
+      const pct = Math.min(100, (phase.progressNow / phase.progressTarget) * 100);
+      document.getElementById('phase-progress-fill').style.width = pct + '%';
+    } else {
+      document.getElementById('phase-progress').style.display = 'none';
+    }
+  }
+}
+
+// 在運動建議中加入趨勢考量
+function getSmartWorkoutAdvice() {
+  const score = calcRecovery();
+  const phase = calcRecoveryPhase();
+  const avg7 = calc7DayAvgRecovery();
+  const hasBad7 = hasNegativeReaction(7);
+
+  // 沒填今天 → 中性建議
+  if (score === null) {
+    return { intensity: 'unknown', message: '先到「紀錄」填寫今日狀態，才能給你建議' };
+  }
+
+  // 修復期：不管今天分數多高都不建議高強度
+  if (phase.phase === 'repair') {
+    return {
+      intensity: 'low',
+      message: `目前是 <strong>修復期</strong>，雖然今天 Recovery ${score}，但身體最近發過訊號，今天還是以伸展或瑜伽為主`
+    };
+  }
+
+  // 重建期：今天分數高也只能到中強度
+  if (phase.phase === 'rebuild') {
+    if (score >= 80) {
+      return {
+        intensity: 'medium',
+        message: `今天 Recovery ${score} 很好，但本週還在 <strong>重建期</strong>，先做中強度（有氧、輕重訓 30 分），觀察隔天反應`
+      };
+    }
+    if (score >= 60) {
+      return {
+        intensity: 'medium',
+        message: `中等強度（瑜伽流動、間歇步行 20-30 分），不要勉強`
+      };
+    }
+    return {
+      intensity: 'low',
+      message: `今天分數偏低，做伸展或散步就好，重建期最忌跳級`
+    };
+  }
+
+  // 穩定期：完整解鎖
+  if (phase.phase === 'stable') {
+    if (score >= 80) {
+      return {
+        intensity: 'high',
+        message: `<strong>穩定期 + 今天狀態很好</strong>，可以挑戰 HIIT/INSANITY。建議第一次回歸先做 50% 時長（例如原本 20 分做 10 分）`
+      };
+    }
+    if (score >= 60) {
+      return { intensity: 'medium', message: `中強度訓練（重訓、有氧 30-45 分），聽身體的聲音` };
+    }
+    return { intensity: 'low', message: `今天狀態普通，做伸展或瑜伽就好` };
+  }
+
+  return { intensity: 'low', message: '低強度開始，慢慢累積' };
+}
+
+// ========================================
 
 // ========== ALERTS ==========
 function renderAlerts() {
@@ -3000,6 +3751,27 @@ function renderAlerts() {
   }
   if (r.menstrual === 'pre' || r.menstrual === 'during') {
     alerts.push('生理期附近，身體比較敏感，請降低運動強度，多補充鐵質。');
+  }
+
+  // 腸胃相關
+  if (r.bowel_type === 'diarrhea') {
+    alerts.push('今天拉肚子了，記得補充水分與電解質，運動可改成散步或休息。');
+  }
+  // 連續 2 天沒排便
+  const todayDt = new Date();
+  const yKey = (n) => {
+    const d = new Date(todayDt);
+    d.setDate(todayDt.getDate() - n);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  const yest = state.records.find(x => x.date === yKey(1));
+  if (r.bowel_type === 'none' && yest?.bowel_type === 'none') {
+    alerts.push('已連續 2 天沒排便，身體可能需要更多水分、纖維和放鬆 💧');
+  }
+  // 連續 2 天拉肚子
+  if ((r.bowel_type === 'diarrhea' || r.bowel_type === 'soft') &&
+      (yest?.bowel_type === 'diarrhea' || yest?.bowel_type === 'soft')) {
+    alerts.push('腸胃連續抗議中，今天的運動建議改成散步或完全休息，喝溫水。');
   }
 
   // 連續高強度檢查
@@ -3098,6 +3870,21 @@ function renderHistory() {
     {key:'stress', label:'壓力', unit:''}
   ];
 
+  // 腸胃狀態的特殊處理
+  const BOWEL_LABELS = {none:'🚫沒去', constipation:'🪨硬塊', hard:'🌰偏硬', normal:'🌿正常', soft:'💧偏軟', diarrhea:'🌊拉肚子'};
+  const ABDOMEN_LABELS = {comfortable:'😌舒服', bloating:'🎈脹氣', cramping:'😣絞痛', unwell:'😔不適'};
+  const renderBowelChip = (record) => {
+    const out = [];
+    if (record.bowel_type) {
+      const warning = ['diarrhea', 'constipation'].includes(record.bowel_type);
+      out.push(`<span class="record-chip bowel ${warning ? 'warning' : ''}"><strong>${BOWEL_LABELS[record.bowel_type]}</strong></span>`);
+    }
+    if (record.abdomen_feel) {
+      out.push(`<span class="record-chip bowel">${ABDOMEN_LABELS[record.abdomen_feel]}</span>`);
+    }
+    return out.join('');
+  };
+
   const renderChips = (record, fields, cls) => {
     return fields
       .filter(f => record[f.key] !== null && record[f.key] !== undefined && record[f.key] !== '')
@@ -3109,6 +3896,7 @@ function renderHistory() {
     const compose = renderChips(r, composeFields, 'sage');
     const measures = renderChips(r, measureFields, 'sage');
     const status = renderChips(r, statusFields, 'rose');
+    const bowel = renderBowelChip(r);
     const hasNote = r.note && r.note.trim();
 
     // 主要值
@@ -3121,7 +3909,7 @@ function renderHistory() {
           <div class="history-date">${fmtDate(r.date)}</div>
           <div class="history-weight">${mainValue}<span style="font-size:12px; color: var(--ink-mute); margin-left:2px;">${mainUnit}</span></div>
         </div>
-        ${compose || measures || status || hasNote ? `<div class="history-chips">${compose}${measures}${status}${hasNote ? `<span class="record-chip note">📝 ${escapeHtml(r.note.length > 20 ? r.note.slice(0, 20) + '...' : r.note)}</span>` : ''}</div>` : '<div style="font-size:11px; color: var(--ink-mute); margin-top: 4px;">僅體重資料</div>'}
+        ${compose || measures || status || bowel || hasNote ? `<div class="history-chips">${compose}${measures}${status}${bowel}${hasNote ? `<span class="record-chip note">📝 ${escapeHtml(r.note.length > 20 ? r.note.slice(0, 20) + '...' : r.note)}</span>` : ''}</div>` : '<div style="font-size:11px; color: var(--ink-mute); margin-top: 4px;">僅體重資料</div>'}
       </div>
     `;
   }).join('');
@@ -3162,40 +3950,45 @@ function renderWorkout() {
   // Suggestions
   const sugg = document.getElementById('workout-suggestions');
   const score = calcRecovery();
+  const phase = calcRecoveryPhase();
+  const advice = getSmartWorkoutAdvice();
+
+  // 階段提示橫幅
+  const phaseBanner = `
+    <div style="background: var(--bg-soft); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 12px; color: var(--ink-soft); line-height: 1.6;">
+      ${phase.emoji} <strong style="color: var(--ink);">${phase.title}</strong> · ${advice.message}
+    </div>
+  `;
+
   let suggestions = [];
-  if (score === null) {
-    // 沒填今日狀態 → 推薦溫和選項 + 提示
+  // 根據「智能建議」的強度等級給對應推薦
+  if (advice.intensity === 'unknown') {
     suggestions = [
       {name:'先到「紀錄」填今日狀態', type:'rest', duration:0, url:''},
       {name:'晨間瑜伽流 (10 分)', type:'yoga', duration:10, url:'https://www.youtube.com/results?search_query=晨間瑜伽'},
       {name:'恢復伸展 10 分', type:'stretch', duration:10, url:'https://www.youtube.com/results?search_query=恢復伸展'}
     ];
-  } else if (score >= 80) {
+  } else if (advice.intensity === 'high') {
+    // 穩定期 + 高分才會到這
     suggestions = [
-      {name:'低衝擊有氧 (晨間版)', type:'cardio', duration:15, url:'https://www.youtube.com/results?search_query=低衝擊有氧'},
-      {name:'快走 20 分', type:'walk', duration:20, url:''},
-      {name:'核心訓練 10 分', type:'strength', duration:10, url:'https://www.youtube.com/results?search_query=核心訓練+10分鐘'}
+      {name:'回歸 HIIT 起步版 (10 分)', type:'hiit', duration:10, url:'https://www.youtube.com/results?search_query=10+min+HIIT+beginner'},
+      {name:'中等心率有氧 25 分', type:'cardio', duration:25, url:'https://www.youtube.com/results?search_query=cardio+workout+25+min'},
+      {name:'重訓全身 30 分', type:'strength', duration:30, url:'https://www.youtube.com/results?search_query=full+body+strength'}
     ];
-  } else if (score >= 60) {
+  } else if (advice.intensity === 'medium') {
     suggestions = [
-      {name:'晨間瑜伽流 (10 分)', type:'yoga', duration:10, url:'https://www.youtube.com/results?search_query=晨間瑜伽'},
-      {name:'店裡空檔伸展 5 分', type:'stretch', duration:5, url:''},
-      {name:'下班路上快走', type:'walk', duration:15, url:''}
+      {name:'低衝擊有氧 (15-20 分)', type:'cardio', duration:15, url:'https://www.youtube.com/results?search_query=low+impact+cardio'},
+      {name:'瑜伽流動 20 分', type:'yoga', duration:20, url:'https://www.youtube.com/results?search_query=yoga+flow+20+min'},
+      {name:'店裡空檔核心 10 分', type:'strength', duration:10, url:'https://www.youtube.com/results?search_query=core+workout+10+min'}
     ];
-  } else if (score >= 40) {
+  } else { // low
     suggestions = [
       {name:'恢復伸展 10 分', type:'stretch', duration:10, url:'https://www.youtube.com/results?search_query=恢復伸展'},
-      {name:'呼吸與身體掃描 5 分', type:'yoga', duration:5, url:''},
+      {name:'呼吸與身體掃描 5 分', type:'yoga', duration:5, url:'https://www.youtube.com/results?search_query=body+scan+meditation'},
       {name:'散步（不要快走）', type:'walk', duration:10, url:''}
     ];
-  } else {
-    suggestions = [
-      {name:'今天請完全休息', type:'rest', duration:0, url:''},
-      {name:'熱水澡 + 5 分腿部伸展', type:'stretch', duration:5, url:''},
-      {name:'冥想或呼吸練習', type:'yoga', duration:5, url:'https://www.youtube.com/results?search_query=睡前冥想'}
-    ];
   }
-  sugg.innerHTML = suggestions.map(s => `
+  sugg.innerHTML = phaseBanner + suggestions.map(s => `
     <div class="day-card" onclick="${s.url?`window.open('${s.url}','_blank')`:''}">
       <div class="day-card-head">
         <div class="day-name">${s.name}</div>
@@ -3328,7 +4121,42 @@ function renderTrends() {
     {key:'fatigue', name:'疲勞', unit:''},
     {key:'stress', name:'壓力', unit:''}
   ];
-  list.innerHTML = metrics.map(m => {
+  // 腸胃統計卡（特殊處理）
+  const bowelRecs = records.filter(r => r.bowel_type);
+  let bowelCard = '';
+  if (bowelRecs.length >= 2) {
+    const stats = { normal:0, constipation:0, hard:0, soft:0, diarrhea:0, none:0 };
+    bowelRecs.forEach(r => { if (stats[r.bowel_type] !== undefined) stats[r.bowel_type]++; });
+    const total = bowelRecs.length;
+    const normalPct = Math.round((stats.normal / total) * 100);
+    const abnormalPct = Math.round(((stats.constipation + stats.hard + stats.soft + stats.diarrhea) / total) * 100);
+    bowelCard = `
+      <div class="trend-card">
+        <div class="trend-head">
+          <div class="trend-name">腸胃狀況</div>
+          <div class="trend-value" style="font-size:14px;">${total} 天紀錄</div>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px;">
+          <div style="text-align:center; padding: 10px; background: var(--sage-bg); border-radius: 10px;">
+            <div style="font-family: var(--serif); font-size: 22px; color: var(--sage-deep); font-weight: 500;">${stats.normal}</div>
+            <div style="font-size: 10px; color: var(--ink-soft); margin-top: 2px;">🌿 正常 (${normalPct}%)</div>
+          </div>
+          <div style="text-align:center; padding: 10px; background: var(--amber-soft); border-radius: 10px;">
+            <div style="font-family: var(--serif); font-size: 22px; color: var(--amber); font-weight: 500;">${stats.constipation + stats.hard + stats.soft + stats.diarrhea}</div>
+            <div style="font-size: 10px; color: var(--ink-soft); margin-top: 2px;">異常 (${abnormalPct}%)</div>
+          </div>
+          <div style="text-align:center; padding: 10px; background: var(--bg-soft); border-radius: 10px;">
+            <div style="font-family: var(--serif); font-size: 22px; color: var(--ink-mute); font-weight: 500;">${stats.none}</div>
+            <div style="font-size: 10px; color: var(--ink-soft); margin-top: 2px;">🚫 沒去</div>
+          </div>
+        </div>
+        <div style="font-size: 11px; color: var(--ink-mute); margin-top: 10px; line-height: 1.6;">
+          硬塊 ${stats.constipation} · 偏硬 ${stats.hard} · 偏軟 ${stats.soft} · 拉肚子 ${stats.diarrhea}
+        </div>
+      </div>
+    `;
+  }
+  list.innerHTML = bowelCard + metrics.map(m => {
     const data = records.map(r => r[m.key]).filter(v => v !== undefined && v !== null && !isNaN(v));
     if (data.length < 2) return '';
     const first = data[0], last = data[data.length-1];
@@ -3436,7 +4264,7 @@ function avgLastWeek(key) {
 // ========== EXPORT ==========
 function exportData() {
   if (state.records.length === 0) { toast('還沒有資料可以匯出'); return; }
-  const fields = ['date','weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh','left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress','menstrual','mood','note'];
+  const fields = ['date','weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh','left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress','menstrual','mood','bowel_type','bowel_count','abdomen_feel','note'];
   const header = fields.join(',');
   const rows = state.records.map(r => fields.map(f => {
     const v = r[f];
@@ -4277,6 +5105,9 @@ const FIELD_MAPPING = {
   sleep: ['sleep','睡眠','睡眠時間','睡眠(小時)'],
   fatigue: ['fatigue','疲勞','疲勞程度'],
   stress: ['stress','壓力','壓力程度'],
+  bowel_type: ['bowel_type','排便','排便狀況','便便'],
+  bowel_count: ['bowel_count','排便次數','次數'],
+  abdomen_feel: ['abdomen_feel','腹部','腹部感覺','肚子'],
   note: ['note','備註','remark','comment','筆記']
 };
 
@@ -4534,7 +5365,8 @@ const PRESET_PROMPTS = {
   today: '根據我最近的紀錄，請建議今天適合做什麼運動，要具體（時長、強度、推薦類型）。',
   trend: '幫我分析最近兩週的身體數據趨勢（體重、體脂、睡眠、壓力），看看有什麼模式。',
   recovery: '我的恢復狀況如何？我最近有沒有過度運動或睡眠不足的跡象？',
-  menstrual: '根據我的生理期狀態，這幾天我該注意什麼？運動和飲食上有什麼建議？'
+  menstrual: '根據我的生理期狀態，這幾天我該注意什麼？運動和飲食上有什麼建議？',
+  bowel: '分析我最近的腸胃狀況。排便不順跟壓力、睡眠有關聯嗎？給我一些飲食、生活建議（記得我有腸躁症史）。'
 };
 
 function askAI(preset) {
@@ -4560,7 +5392,7 @@ async function askAIWithMessage(userMsg) {
   const recent14 = [...state.records].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 14);
   const recentLogs = [...state.logs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0, 10);
   
-  const systemPrompt = `你是 BodyNote 的健康教練「Note」。使用者是位開店工作者，週一到週日早 9 點到晚 8:30 上班，作息固定但壓力大。她過去能做高強度運動（INSANITY），但近期早晚運動會立刻生病，反映恢復能力不足。
+  const systemPrompt = `你是 BodyNote 的健康教練「Note」。使用者是位開店工作者，週一到週日早 9 點到晚 8:30 上班，作息固定但壓力大。她過去能做高強度運動（INSANITY），但近期早晚運動會立刻生病，反映恢復能力不足。她有腸躁症病史（約 7 年前），目前排便不順是長期問題，跟壓力相關性高。
 
 她目前 ${state.user?.name || ''}，身高 ${state.user?.height || '?'} cm。
 
@@ -4568,8 +5400,11 @@ async function askAIWithMessage(userMsg) {
 - 不催促減重，重點是恢復和永續
 - 具體建議（時長、強度、類型），不空泛
 - 如果 Recovery Score 低，建議低強度或休息
+- 注意腸胃狀況：拉肚子當天不建議運動；連續便秘可能跟壓力/睡眠相關，建議檢視作息
 - 字數控制在 200 字內，重點用 **粗體** 標註
 - 不要說「請諮詢醫生」這種防禦性話術，除非真的有醫療警訊
+
+紀錄欄位說明：bowel_type 是排便狀況（none/constipation/hard/normal/soft/diarrhea），abdomen_feel 是腹部感覺（comfortable/bloating/cramping/unwell）。
 
 最近 14 天身體紀錄（JSON）：
 ${JSON.stringify(recent14, null, 2)}
@@ -4671,10 +5506,13 @@ function openEditRecord(id) {
   document.getElementById('edit-modal-sub').textContent = `編輯 ${r.date} 的紀錄`;
   document.getElementById('edit-date').value = r.date;
   ['weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh',
-   'left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress'].forEach(f => {
+   'left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress','bowel_count'].forEach(f => {
     const el = document.getElementById('edit-' + f);
     if (el) el.value = r[f] ?? '';
   });
+  // select 欄位
+  document.getElementById('edit-bowel_type').value = r.bowel_type || '';
+  document.getElementById('edit-abdomen_feel').value = r.abdomen_feel || '';
   document.getElementById('edit-note').value = r.note || '';
   closeModal('manage-modal');
   openModal('edit-modal');
@@ -4686,11 +5524,14 @@ async function saveEditedRecord() {
     date: document.getElementById('edit-date').value
   };
   ['weight','fat','bmi','visceral','waist','hip','chest','left_thigh','right_thigh',
-   'left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress'].forEach(f => {
+   'left_calf','right_calf','shoulder','upper_arm','sleep','fatigue','stress','bowel_count'].forEach(f => {
     const el = document.getElementById('edit-' + f);
     const v = parseFloat(el.value);
     patch[f] = isNaN(v) ? null : v;
   });
+  // 文字 select 欄位
+  patch.bowel_type = document.getElementById('edit-bowel_type').value || null;
+  patch.abdomen_feel = document.getElementById('edit-abdomen_feel').value || null;
   patch.note = document.getElementById('edit-note').value.trim() || null;
 
   // 重算 BMI（如果體重變了沒填 BMI）
