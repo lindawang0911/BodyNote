@@ -3712,6 +3712,13 @@ function fmtDate(key) {
   return `${m}/${d}`;
 }
 
+// 含年份版本（給照片用）：YYYY/M/D
+function fmtDateFull(key) {
+  if (!key) return '';
+  const [y, m, d] = key.split('-');
+  return `${y}/${parseInt(m)}/${parseInt(d)}`;
+}
+
 // 標記滑桿被使用者動過（用於分辨「真的填了」vs「沒動過預設值」）
 function markSliderDirty(id) {
   const el = document.getElementById(id);
@@ -6319,7 +6326,7 @@ function renderPhotoTile(p) {
     <div class="photo-item ${isLocked ? 'locked' : ''}" onclick="openPhotoViewer('${p.id}')">
       <img src="${p.dataUrl}" loading="lazy">
       <div class="photo-item-meta">
-        <div class="date">${fmtDate(p.date)} · ${ANGLE_LABELS[p.angle]}</div>
+        <div class="date">${fmtDateFull(p.date)} · ${ANGLE_LABELS[p.angle]}</div>
         <div class="weight">${p.weight ? p.weight + ' kg' : ''}${p.fat ? ' · ' + p.fat + '%' : ''}</div>
       </div>
     </div>
@@ -6337,7 +6344,7 @@ function openPhotoViewer(id) {
   state.currentPhotoId = id;
   document.getElementById('viewer-img').src = p.dataUrl;
   document.getElementById('viewer-meta').innerHTML = `
-    <div style="font-size:18px; font-style:italic;">${fmtDate(p.date)} · ${ANGLE_LABELS[p.angle]}</div>
+    <div style="font-size:18px; font-style:italic;">${fmtDateFull(p.date)} · ${ANGLE_LABELS[p.angle]}</div>
     <div style="font-size:13px; opacity:0.8; margin-top:6px;">
       ${p.weight ? p.weight + ' kg' : ''}${p.fat ? ' · 體脂 ' + p.fat + '%' : ''}
     </div>
@@ -6418,7 +6425,7 @@ function pickCompare(slot) {
     <div class="photo-item" onclick="selectCompare('${p.id}')">
       <img src="${p.dataUrl}">
       <div class="photo-item-meta">
-        <div class="date">${fmtDate(p.date)} · ${ANGLE_LABELS[p.angle]}</div>
+        <div class="date">${fmtDateFull(p.date)} · ${ANGLE_LABELS[p.angle]}</div>
       </div>
     </div>
   `).join('');
@@ -6436,7 +6443,7 @@ function renderCompare() {
     if (sel[slot]) {
       const p = state.photos.find(x => x.id === sel[slot]);
       if (p) {
-        cell.innerHTML = `<span class="compare-label">${fmtDate(p.date)}</span><img src="${p.dataUrl}">`;
+        cell.innerHTML = `<span class="compare-label">${fmtDateFull(p.date)}</span><img src="${p.dataUrl}">`;
         return;
       }
     }
