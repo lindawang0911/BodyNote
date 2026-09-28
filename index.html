@@ -786,6 +786,85 @@ input[type="range"]::-moz-range-thumb {
   align-items: center;
 }
 .day-duration { color: var(--ink-mute); font-size: 12px; }
+.day-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.day-edit-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.day-card.today .day-edit-btn { background: var(--card); }
+
+/* 排入哪一天（選擇面板） */
+.day-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.day-pick {
+  position: relative;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 14px;
+  padding: 10px 0 6px;
+  text-align: center;
+  font-size: 15px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.day-pick small { display: block; font-size: 10px; color: var(--ink-mute); line-height: 1.2; height: 12px; }
+.day-pick.is-today { border-color: var(--sage); }
+.day-pick.active { background: var(--sage-bg); border-color: var(--sage-deep); color: var(--sage-deep); font-weight: 600; }
+.day-pick-dot { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--amber); }
+.day-pick-hint {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+.day-pick-hint.warn { background: var(--amber-soft); color: #8A6440; }
+.btn-primary:disabled { background: var(--sage-soft); cursor: default; }
+
+/* 下拉更新 */
+.ptr {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0; right: 0;
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  z-index: 150;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-64px);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.ptr.dragging { transition: none; }
+.ptr-leaf {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.ptr.loading .ptr-leaf { animation: ptrSpin 1s linear infinite; }
+@keyframes ptrSpin { to { transform: rotate(360deg); } }
+.ptr-text { font-size: 11px; color: var(--ink-mute); }
+.page.ptr-pulling { animation: none; transition: transform 0.3s ease; }
+.page.ptr-pulling.dragging { transition: none; }
 
 /* Trends */
 .trend-card {
@@ -3020,6 +3099,24 @@ input[type="range"]::-moz-range-thumb {
   </div>
 </div>
 
+<!-- 排入哪一天（從影片卡片的 ＋ 打開） -->
+<div class="modal-bg" id="day-pick-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">排入哪一天？</div>
+    <div class="modal-sub" id="dp-video">影片名稱</div>
+    <div class="day-pick-grid" id="dp-days"></div>
+    <div class="day-pick-hint" id="dp-hint">選一天，把這部影片放進你的本週安排</div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-ghost" onclick="closeModal('day-pick-modal')">取消</button>
+      <button class="btn btn-primary" id="dp-confirm" disabled onclick="confirmAssignDay()">排入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 下拉更新指示 -->
+<div class="ptr" id="ptr"><div class="ptr-leaf">🌿</div><div class="ptr-text" id="ptr-text">往下拉更新</div></div>
+
 <!-- Field modal (from body diagram) -->
 <div class="modal-bg" id="field-modal">
   <div class="modal">
@@ -5097,7 +5194,8 @@ function renderWorkout() {
     const s = state.schedules[dayIdx];
     const div = document.createElement('div');
     div.className = 'day-card' + (dayIdx === today ? ' today' : '');
-    div.onclick = () => openWorkoutModal(dayIdx);
+    // 有影片 → 點卡片直接開影片；沒影片/沒安排 → 進入編輯
+    div.onclick = (s && s.url) ? () => window.open(s.url, '_blank') : () => openWorkoutModal(dayIdx);
     const log = state.logs.find(l => {
       const d = new Date(l.date);
       return d.getDay() === dayIdx && isThisWeek(l.date);
@@ -5110,10 +5208,15 @@ function renderWorkout() {
         <div class="day-status ${status}">${statusText}</div>
       </div>
       <div class="day-workout">
-        <span>${s ? s.name + ' · ' + TYPE_LABELS[s.type] : '點擊安排運動'}</span>
-        <span class="day-duration">${s ? s.duration + ' 分' : ''}</span>
+        <span>${s ? (s.url ? '▶ ' : '') + escapeHtml(s.name) + ' · ' + TYPE_LABELS[s.type] : '點擊安排運動'}</span>
+        <span class="day-right">
+          <span class="day-duration">${s ? s.duration + ' 分' : ''}</span>
+          ${s ? '<button class="day-edit-btn" title="編輯 / 完成紀錄">✎</button>' : ''}
+        </span>
       </div>
     `;
+    const editBtn = div.querySelector('.day-edit-btn');
+    if (editBtn) editBtn.onclick = e => { e.stopPropagation(); openWorkoutModal(dayIdx); };
     container.appendChild(div);
   }
 
@@ -5940,14 +6043,50 @@ async function saveEditedVideo() {
   if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
 }
 
-async function assignVideoToDay(videoId) {
-  const allVideos = state.videos;
-  const v = allVideos.find(x => x.id === videoId);
+// 排入哪一天：打開選擇面板
+let assigningVideoId = null;
+let assigningDayIdx = null;
+function assignVideoToDay(videoId) {
+  const v = state.videos.find(x => x.id === videoId);
   if (!v) return;
-  const day = prompt('排入哪一天？輸入 1-7（1=週一，7=週日）');
-  const d = parseInt(day);
-  if (!d || d < 1 || d > 7) return;
-  const dayIdx = d === 7 ? 0 : d;
+  assigningVideoId = videoId;
+  assigningDayIdx = null;
+  const SHORT = ['日','一','二','三','四','五','六'];
+  const today = new Date().getDay();
+  document.getElementById('dp-video').textContent = `${v.title}${v.duration ? ' · ' + v.duration + ' 分' : ''}`;
+  document.getElementById('dp-days').innerHTML = [1,2,3,4,5,6,0].map(i => `
+    <div class="day-pick ${i === today ? 'is-today' : ''}" data-day="${i}" onclick="pickAssignDay(${i})">
+      ${state.schedules[i] ? '<span class="day-pick-dot"></span>' : ''}${SHORT[i]}<small>${i === today ? '今天' : ''}</small>
+    </div>`).join('');
+  const hint = document.getElementById('dp-hint');
+  hint.className = 'day-pick-hint';
+  hint.textContent = '選一天，把這部影片放進你的本週安排';
+  document.getElementById('dp-confirm').disabled = true;
+  openModal('day-pick-modal');
+}
+
+function pickAssignDay(dayIdx) {
+  assigningDayIdx = dayIdx;
+  document.querySelectorAll('#dp-days .day-pick').forEach(el =>
+    el.classList.toggle('active', +el.dataset.day === dayIdx));
+  const hint = document.getElementById('dp-hint');
+  const existing = state.schedules[dayIdx];
+  if (existing) {
+    hint.className = 'day-pick-hint warn';
+    hint.textContent = `${DAY_NAMES[dayIdx]}原本是「${existing.name}」，排入後會換成這部影片`;
+  } else {
+    hint.className = 'day-pick-hint';
+    hint.textContent = `${DAY_NAMES[dayIdx]}目前是空的，排入後就會出現在本週`;
+  }
+  document.getElementById('dp-confirm').disabled = false;
+}
+
+async function confirmAssignDay() {
+  const v = state.videos.find(x => x.id === assigningVideoId);
+  const dayIdx = assigningDayIdx;
+  if (!v || dayIdx === null) return;
+  const btn = document.getElementById('dp-confirm');
+  btn.disabled = true;
   let type = 'cardio';
   if (v.tags.includes('yoga')) type = 'yoga';
   else if (v.tags.includes('stretch')) type = 'stretch';
@@ -5963,12 +6102,16 @@ async function assignVideoToDay(videoId) {
     .upsert(payload, { onConflict: 'user_id,day_of_week' })
     .select()
     .single();
-  if (error) { toast('排入失敗'); return; }
+  if (error) { btn.disabled = false; toast('排入失敗'); return; }
   state.schedules[dayIdx] = {
     id: data.id, name: data.name, type: data.type,
     duration: data.duration, url: data.url, note: data.note
   };
-  toast(`已排入 ${DAY_NAMES[dayIdx]}`);
+  closeModal('day-pick-modal');
+  toast(`已排入 ${DAY_NAMES[dayIdx]} ✓`);
+  // 立刻更新本週與首頁的今日運動
+  renderWorkout();
+  renderTodayWorkout();
 }
 
 async function saveCustomVideo() {
@@ -6974,6 +7117,111 @@ async function deleteRecord(id) {
 // ========================================
 // ========== GO ==========
 // ========================================
+// ========== 下拉更新 ==========
+// 在頁面最上方往下拉 → 重新從雲端抓資料，並更新目前這一頁
+let ptrBusy = false;
+function setupPullToRefresh() {
+  const ptr = document.getElementById('ptr');
+  const txt = document.getElementById('ptr-text');
+  const THRESHOLD = 64;
+  let startX = 0, startY = 0, dy = 0, tracking = false, pulling = false, page = null;
+
+  function setOffset(px) {
+    ptr.style.opacity = px > 0 ? Math.min(1, px / THRESHOLD) : 0;
+    ptr.style.transform = `translateY(${Math.min(px, THRESHOLD) - 64}px)`;
+    if (page) page.style.transform = px > 0 ? `translateY(${px}px)` : '';
+  }
+  function reset() {
+    ptr.classList.remove('dragging');
+    if (page) page.classList.remove('dragging');
+    setOffset(0);
+    const p = page;
+    setTimeout(() => { if (p) p.classList.remove('ptr-pulling'); }, 300);
+    pulling = false;
+  }
+
+  document.addEventListener('touchstart', e => {
+    tracking = false;
+    if (ptrBusy || !state.user || e.touches.length !== 1) return;
+    if (window.scrollY > 0) return;
+    // 有視窗打開、或在圖表/輸入框上時不觸發
+    if (document.querySelector('.modal-bg.active')) return;
+    if (e.target.closest('svg, input, textarea, select, .modal-bg, #onboard')) return;
+    page = document.querySelector('.page.active');
+    if (!page) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dy = 0;
+    tracking = true;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', e => {
+    if (!tracking) return;
+    const moveX = e.touches[0].clientX - startX;
+    const moveY = e.touches[0].clientY - startY;
+    if (!pulling) {
+      // 往上滑或橫向滑動 → 不是下拉
+      if (moveY <= 0 || Math.abs(moveX) > Math.abs(moveY)) { if (Math.abs(moveX) > 8 || moveY < -8) tracking = false; return; }
+      if (window.scrollY > 0) { tracking = false; return; }
+      pulling = true;
+      page.classList.add('ptr-pulling', 'dragging');
+      ptr.classList.add('dragging');
+    }
+    dy = Math.min(Math.max(0, moveY) * 0.5, 100);
+    setOffset(dy);
+    txt.textContent = dy >= THRESHOLD ? '放開以更新' : '往下拉更新';
+  }, { passive: true });
+
+  async function onEnd() {
+    if (!tracking) return;
+    tracking = false;
+    if (!pulling) return;
+    if (dy < THRESHOLD) { reset(); return; }
+    ptrBusy = true;
+    ptr.classList.remove('dragging');
+    page.classList.remove('dragging');
+    ptr.classList.add('loading');
+    txt.textContent = '更新中…';
+    setOffset(56);
+    try {
+      await refreshAllData();
+      txt.textContent = '已是最新 ✓';
+      ptr.classList.remove('loading');
+      setTimeout(() => { reset(); ptrBusy = false; toast('資料已更新 ✓'); }, 500);
+    } catch (err) {
+      console.warn(err);
+      ptr.classList.remove('loading');
+      reset();
+      ptrBusy = false;
+      toast('更新沒有成功，稍後再試試');
+    }
+  }
+  document.addEventListener('touchend', onEnd);
+  document.addEventListener('touchcancel', onEnd);
+}
+
+async function refreshAllData() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) throw new Error('no session');
+  state.session = session;
+  await loadUserData(session.user);
+  renderAll();
+  renderTodayWorkout();
+  // 更新目前所在的分頁（不重設紀錄頁正在填的表單）
+  const tab = document.querySelector('.tab.active')?.dataset.tab;
+  if (tab === 'record') updateRecordDots();
+  if (tab === 'workout') {
+    renderWorkout();
+    if (document.getElementById('workout-sub-favorites').style.display !== 'none') renderFavorites();
+    if (document.getElementById('workout-sub-library').style.display !== 'none') renderLibrary();
+  }
+  if (tab === 'trends') renderTrends();
+  if (tab === 'me') renderMe();
+  if (tab === 'photos') renderPhotosPage();
+  if (tab === 'ai') renderAIPage();
+}
+
+setupPullToRefresh();
 init();
 </script>
 </body>
